@@ -1,0 +1,83 @@
+\chapter{Desarrollo\label{sec:desarrollo}}
+
+\section{Unificación de Ramas}
+\begin{itemize}
+	\item Intro ramas alberto y javier ¿Aquí o en estado del arte?
+	\item Merge entre las ramas de Alberto y Javier (se hizo a mano por el gran número de problemas que producía el merge automático, los cambios se hicieron sobre la rama de Alberto por ser la que más cambios introducía sobre el código "base" del programa de simulación):
+	\begin{itemize}
+		\item Modificación de código de Javier en la función UpdatePopulations de interventions.cpp para que emplee birth y death rate como la rama de Alberto
+		\item Modificación de los parametros de entrada de todas las funciones de OncoSimulR para que tomen de forma adecuada el parámetro de intervenciones, así como actualización de RcppExports.R, RcppExports.cpp y OncoSimulR\_init.c con el mismo fin.
+	- Adición de los tests de intervenciones y los mans de intervenciones a la rama de alberto, así como interventions.cpp (con updatepopulations modificado), interventions.h, multivariant\_hypergeometric.cpp y multivariant\_hypergeometric.h
+	\end{itemize}
+	\item Merge automático con los últimos cambios muy simples que introdujo Ramón sobre el programa en ese tiempo.
+\end{itemize}
+
+\section{Corrección de errores previos y optimización del código}
+
+\begin{itemize}
+	\item Tras realizar el merge entres las ramas anteriores se detectaron una serie de fallos de la funcionalidad previa en los tests que fue necesario solucionar para proceder a la implementación de la nueva funcionalidad. Estos fallos estaban localizados en los tests de la funcionalidad de intervenciones que se ha eplicado anteriormente (o bien en estado del arte o en la sección de unificación de ramas).
+	\item Para solucionar los fallos:
+	\begin{itemize}
+		\item Añadir InterventionTimes a x\$other\$interventionTimes con los tiempos de las intervenciones para poder realizar tests (se rellena en BNB\_nr.cpp tras haber cambiado executeInterventions)
+		\item Adelantar la ejecución de intervenciones para que se realice antes de rellenar las estructuras de salida para evitar que las actualizaciones de poblacion de las intervenciones se realicen 1 samboleEvery despues de lo debido y para que la tabla de poblaciones y la de birth y death rates estén correctamente actualizadas y sincronizadas entre sí
+		\item Comentar la comprobación de totPopSize != totalPop en reduceTotalPopulation (interventions.cpp) porque al haberlo adelantado totPopSize no está actualizado
+		\item Añadir código para eliminar los genotipos con 0 población despues de realizar intervenciones para evitar el error que se obtenía: Unrecoverable exception: ti: popSize <= 0. spP.popSize = 0.000000. Aborting.
+		\item Adaptar los tests de intervenciones a estos nuevos cambios y comprobar que todos los tests se pasan correctamente
+	\end{itemize}
+	\item Tras esto ademas realizamos algunos cambios en el código pues durante estas modificaciones se vió que en numerosas ocasiones se ejecutaban fragmentos de código innecesarios, que en una ejecución de una simulación de gran tamaño suponían un gran aumento del tiempo de ejecución, para ello:
+	\begin{itemize}
+		\item Modificamos la funcion ExecuteInterventions de interventions.cpp:
+		\begin{itemize}
+			\item Hacer que devuelva true si hay intervencion y false si no y en caso de error solo lance excepción (esto permite el siguiente punto y permite obtener InterventionTimes desde fuera)
+			\item Hacer que solo se llame a UpdatePopulations si ha habido intervención (antes se ejecutaba en todas las iteraciones aunque no hubiese intervenciones)
+		\end{itemize}
+		\item Cambiar ParseWhatHappens, ahora devuelve void y si hay error solo lanza excepción
+	\end{itemize}
+\end{itemize}
+
+\section{Implementación en R}
+
+\begin{itemize}
+	\item creación de variables y reglas en R
+	\item verificación de:
+	\begin{itemize}
+		\item no hay 2 uservars con mismo nombre
+		\item no hay 2 reglas con mismo id
+		\item están bien especificadas (reglas y variables tienen todos los atributos, las reglas tienen la estructura correcta en condition y action)
+		\item Modificación de los n\_x en condition y action de las reglas
+	\end{itemize}
+	\item Modificación de la llamada a oncoSimulIndiv añadiendo userVars y rules
+\end{itemize}
+
+\section{Implementación en C++}
+
+\begin{itemize}
+	\item estructuras Rule y UserVarsInfo
+	\item funciones de user\_var.cpp:
+	\begin{itemize}
+		\item Básicas (createRule, createUserVarsInfo, destroyRule, compareRules, addRule, printRule, printUserVarsInfo)
+		\item isValid (Comprueba si las expresiones de las acciones de las reglas están bien formadas)
+		\item executeRules (Comprueba si se cumple la condición mediante exprtk, y si se cumple llama a parseAction)
+		\item parseAction ("compila" la acción de la regla con exprtk y la ejecuta variando las variables de usuario necesarias en el map de UserVarsInfo)
+	\end{itemize}
+\end{itemize}
+
+\section{Integración en el flujo principal de código}
+
+\begin{itemize}
+	\item Se incluye la ejecución de las reglas en el flujo de código de la simulación en la función nr\_innerBNB de BNB\_nr.cpp justo antes de la ejecución de las intervenciones para permitir que las variables de usuario estén actualizadas antes de realizar las intervenciones ya que se emplean para estas.
+	\item Se crea la función evalFVarsFitness que permite acceder al birthrate, deathrate y mutationrate que se deben pasar como argumentos  para executeRules para poder añadirse a la tabla de símbolos de exprtk y poder emplearse en las fórmulas para las codiciones o modificaciones de las reglas para actualizar las variables de usuario.
+	\item Empleamos tambien la función evalFVars para acceder a las poblaciones de los genotipos con la misma finalidad.
+	\item Modificamos la estructura de salida de la función BNB\_nr\_Algo5 para que incluya la lista con los nombres de las variables de usuario y la matriz con los valores de estas en cada sampleEvery
+	\item Modificamos las cabeceras y llamadas a funciones para que incluyan las nuevas variables userVars, Rules y userVarsInfo, y se realicen las llamadas de forma adecuada.
+	\item Modificación de los parametros de entrada de todas las funciones de OncoSimulR para que tomen de forma adecuada el parámetro de intervenciones, así como actualización de RcppExports.R, RcppExports.cpp y OncoSimulR\_init.c con el mismo fin.
+\end{itemize}
+
+\section{Inclusión de las variables en las intervenciones}
+
+\begin{itemize}
+	\item Modificamos executeInterventions para que reciba como argumento la estructura userVarsInfo con los datos de las variables de usuario y añadimos un pequeño fragmento que añade las variables de usuario y sus valores a la tabla de símbolos de exprtk para poder ser empleadas en las imtervenciones.
+	\item Realizamos el mismo proceso para ParseWhatHappens.
+	\item Modificamos las cabeceras y llamadas a estas 2 funciones de forma adecuada para que incluyan userVarsInfo en todas las llamadas. 
+\end{itemize}
+

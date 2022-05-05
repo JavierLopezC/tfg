@@ -1,0 +1,36 @@
+\chapter{Pruebas y Resultados\label{sec:resultados}}
+
+\section{Comprobación de funcionalidad previa}
+
+\begin{itemize}
+	\item Comprobamos que la funcionalidad previa no se ha perdido ejecutando la batería de tests ya existentes para todo oncoSimulR con la herramienta testthat y tambien los manuales.
+\end{itemize}
+
+\section{Tests de variables de usuario}
+
+\begin{itemize}
+	\item Creamos el fichero de tests para testthat test.user\_var.R que contiene 8 tests para probar el correcto funcionamiento de las variables de usuario
+	\begin{itemize}
+		\item Probar que las variables se crean correctamente
+		\item Comprobar que 2 variables no pueden tener el mismo nombre
+		\item Comprobar que las reglas se crean correctamente
+		\item Comprobar que 2 reglas no pueden tener el mismo ID
+		\item Comprobar que la ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de la variable T)
+		\item Comprobar que la ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de la variable N)
+		\item Comprobar que la ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de las poblaciones por genotipo n\_x)
+		\item Comprobar que la ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de la otras variables de usuario)
+	\end{itemize}
+\end{itemize}
+
+\section{Tests de intervenciones}
+
+\begin{itemize}
+	\item Modificamos el fichero de tests de intervenciones test-interventions.R para incluir dos tests que compruebe que las intervenciones se ejecutan de forma adecuada cuando el trigger depende de variables de usuario y cuando la función de modificación emplea variables de usuario.
+\end{itemize}
+
+\section{Resultados}
+
+\begin{itemize}
+	\item ¿Optmización?
+	\item ¿?
+\end{itemize}

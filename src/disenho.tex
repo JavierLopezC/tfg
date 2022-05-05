@@ -1,0 +1,72 @@
+\chapter{Diseño\label{sec:disenho}}
+
+\section{Definición de variables y reglas}
+A la hora de plantearse el diseño necesario para esta funcionalidad, lo primero que necesitamos saber es qué son y como se definen las variables de usuario que vamos a implementar.
+
+Las variables de usuario son variables arbitrariamente complejas que un usuario puede definir a partir de combinaciones o funciones de algunas variables ya existentes en el programa. Para obtener estas variables arbitrariamente complejas vamos a necesitar de una serie de reglas que determinen el valor de estas variables en cada momento de acuerdo a las condiciones propuestas por el usuario para cada una de las variables.
+
+Por tanto podemos determinar que por un lado tendremos un listado de variables, cada una de las cuales debera contener:
+\begin{itemize}
+	\item Nombre: nombre de la variable de usuario que permite identificarla y diferenciarla de el resto de variables definidas.
+	\item Valor: valor numérico de la variable en cada momento.
+\end{itemize}
+
+Por otro lado tendremos un listado con las reglas que permiten modificar y actualizar las distintas variables definidas. Estas reglas contan de:
+
+\begin{itemize}
+	\item ID: identificador único de cada regla que permite diferenciarla del resto de reglas definidas.		
+	\item Condition: la condición que, si se cumple, hará que la variable de usuario se modifique.
+	\item Action: acción que se llevará a cabo en caso de que la "Condition" se cumpla, es decir, es el conjunto de modificaciones a realizar a las variables de usuario en caso de que se cumpla la condición de la regla. podrá contener una o varias fórmulas que determinarán los nuevos valores de una o varias variables de usuario.
+\end{itemize}
+
+En este punto debemos mencionar también, qué variables del programa se ha decidido que sean empleables para la modificación de variables y definición de las reglas por parte del usuario y los motivos por los que se ha decidido esto. Las variables disponibles para la definición de las reglas son:
+
+\begin{itemize}
+	\item birthRate: la tasa de nacimiento correspondiente a lcada genotipo, es decir,es un nñumero que determina la probabilidad que tiene una célula con este genotipo de reproducirse, y por tanto aumentar su número total en 1 en un ciclo de tiempo.
+	\item deathRate: la tasa de muerte correspondiente a cada genotipo, es decir, es un número que determina la probabilidad que tiene una célula con este genotipo de morir, y por tanto reducir su número total en 1 en un ciclo de tiempo.
+	\item mutationRate: la tasa de mutación correspondiente a cada genotipo, es decir, es un número que determina la probabilidad que tiene una célula con este genotipo de mutar, y por tanto variar alguno de sus genes, pasando de ser de este genotipo a ser de otro genotipo distinto en 1 en un ciclo de tiempo.
+	\item N: número total de células en la simulación, teniendo en cuenta todos los genotipos existentes.
+	\item n\_x: número de células de un determinado genotipo concreto, por ejemplo, n\_A será el número de células del genotipo A, y n\_A\_B las del genotipo A\_B
+	\item T: tiempo transcurrido desde el inicio de la simulación, en segundos, con precisión de milisegundos.
+	\item Variables de usuario: otras variables de usuario definidas en la misma simulación.		
+\end{itemize}
+
+Estas variables se han añadido con la finalidad de dar a las variables de usuario la mayor flexibilidad posible para que el usuario las defina de acuerdo a sus necesidades, considerando todas las variables interesantes tanto para la terapia adaptativa como desde un punto de vista biológico para estudiar su evolución.
+
+Las variables N, n\_x y T se consideran necesarias para la terapia adaptativa, ya que permiten definir variables de usuario que se modifiquen de auerdo a la evolución del tamaño del tumor (N), a la cantidad de las células de un determinado tipo, que se consideren más perjudiciales o sensibles a un determinado tratamiento (n\_x) o al tiempo transcurrido (T). Estas variables definidas de acuerdo a estos atributos se podrían emplear luego para definir las intervenciones que permite el programa OncoSimulR, permitiendo adaptarlas de forma adecuada a las distintas combinaciones posibles de estos 3 atributos a lo largo de la simulación, generando así la posibilidad de simular terapia adaptativa. A estas 3 variables se les suman las propias variables de usuario, para poder así generar combinaciones aún más complejas que permitan simular escenarios altamente enrevesados.
+
+Las otras variables  birthRate, deathRate y mutationRate, se han añadido con una finalidad más informativa, ya que, a pesar de no ser tan interesantes desde el punto de vista de la terapia adaptativa (aunque pueden aplicarse en algunos casos), dan una información importante acerca de la adaptabilidad de los distintos genotipos a lo largo de la simulación, haciendo que el estudio de la evolución de variables de usuario que sean combinación de estas variables a lo largo de la simulación pueda tener un gran interés para el estudio tumoral.
+
+\section{Algoritmo de actualización}
+
+El algoritmo de actualización de las variables de usuario es a priori, bastante sencillo, pero su principal complejidad radica en su implementación e integración en el flujo de código principal, como veremos en la sección 4.
+
+En rasgos generales el algoritmo de actualización es:
+
+\begin{itemize}
+	\item El usuario define las varibales de usuario que desea y las reglas para modificarlas
+	\item Se verifica que estan definidas correctamente
+	\item Cada sampleEvery:
+	\begin{itemize}
+		\item para cada regla:
+		\begin{itemize}
+			\item Si se cumple la Condition:
+				\begin{itemize}
+					\item Modificamos el valor de las variables de acuerdo al Action		
+				\end{itemize}
+			\item Se pasa a la siguiente regla	
+		\end{itemize}		
+	\end{itemize}		
+\end{itemize}
+
+\section{Definición de la estructura de salida}
+\begin{itemize}
+	\item Se modifica la estructura de salida de la función OncoSimulIndiv en R añadiendo los campos:
+	\begin{itemize}
+		\item x\$other\$userVarNames lista con los nombres ("ids") de las variables de usuario creadas
+		\item x\$other\$userVarValues matriz con los valores de las variables de usuario en cada sampleEvery (en el mismo orden que los nombres de las variables en x\$other\$userVarNames	
+	\end{itemize}
+	\item Finalidad: poder emplear las variables de usuario (que son arbitrariamente complejas) como datos de salida y no solo como valores a emplear en otros procesos como las intervenciones. Por ejemplo graficar la evolución en el tiempo de algunas variables de usuario creadas puede ser interesante para evaluar la evolución del tumor en una simulación.	
+\end{itemize}
+
+
