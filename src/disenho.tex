@@ -43,30 +43,31 @@ El algoritmo de actualización de las variables de usuario es a priori, bastante
 
 En rasgos generales el algoritmo de actualización es:
 
-\begin{itemize}
+\begin{enumerate}
 	\item El usuario define las varibales de usuario que desea y las reglas para modificarlas
 	\item Se verifica que estan definidas correctamente
-	\item Cada sampleEvery:
-	\begin{itemize}
-		\item para cada regla:
-		\begin{itemize}
+	\item Cada unidad de tiempo muestreada en la simulación:
+	\begin{enumerate}
+		\item Para cada regla:
+		\begin{enumerate}
 			\item Si se cumple la Condition:
-				\begin{itemize}
-					\item Modificamos el valor de las variables de acuerdo al Action		
-				\end{itemize}
-			\item Se pasa a la siguiente regla	
-		\end{itemize}		
-	\end{itemize}		
-\end{itemize}
+				\begin{enumerate}
+					\item Modificamos el valor de las variables de usuario según lo especificado por el usuario en el atributo Action		
+				\end{enumerate}
+			\item Se pasa a la siguiente regla volviendo a 1)	
+		\end{enumerate}
+		\item Se procede a la ejecución de las intervenciones con los valores de las variables calculados	
+	\end{enumerate}		
+\end{enumerate}
 
 \section{Definición de la estructura de salida}
+
+Para obtener los datos de evolución de las variables de usuario definidas en el tiempo a lo largo de la simulación, se deberán modificar la salida del programa de simulación para que incluya estos. Se debe añadir por tanto a la salida
 \begin{itemize}
-	\item Se modifica la estructura de salida de la función OncoSimulIndiv en R añadiendo los campos:
-	\begin{itemize}
-		\item x\$other\$userVarNames lista con los nombres ("ids") de las variables de usuario creadas
-		\item x\$other\$userVarValues matriz con los valores de las variables de usuario en cada sampleEvery (en el mismo orden que los nombres de las variables en x\$other\$userVarNames	
-	\end{itemize}
-	\item Finalidad: poder emplear las variables de usuario (que son arbitrariamente complejas) como datos de salida y no solo como valores a emplear en otros procesos como las intervenciones. Por ejemplo graficar la evolución en el tiempo de algunas variables de usuario creadas puede ser interesante para evaluar la evolución del tumor en una simulación.	
+	\item Una lista con los nombres ("ids") de las variables de usuario creadas.
+	\item Una matriz con los valores de las variables de usuario en cada unidad de tiempo muestreada (en el mismo orden que los nombres de las variables en en la lista de nombres de las variables de usuario).	
+
+La finalidad de añadir estos datos a la salida de la simulación es poder emplear las variables de usuario (que son arbitrariamente complejas) como datos de salida y no solo como valores a emplear en otros procesos como las intervenciones. Por ejemplo, obtener estos datos permite al usuario graficar la evolución en el tiempo de algunas variables de usuario creadas, lo que puede ser de gran interés para evaluar la evolución del tumor en la simulación. Además, la adición de estos datos en la salida facilitará enormemente las labores de testeo de la funcionalidad implementada.	
 \end{itemize}
 
 

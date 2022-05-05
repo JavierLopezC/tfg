@@ -6,6 +6,30 @@
 	\item Comprobamos que la funcionalidad previa no se ha perdido ejecutando la batería de tests ya existentes para todo oncoSimulR con la herramienta testthat y tambien los manuales.
 \end{itemize}
 
+
+\begin{itemize}
+	\item Tras realizar el merge entres las ramas anteriores se detectaron una serie de fallos de la funcionalidad previa en los tests que fue necesario solucionar para proceder a la implementación de la nueva funcionalidad. Estos fallos estaban localizados en los tests de la funcionalidad de intervenciones que se ha eplicado anteriormente (o bien en estado del arte o en la sección de unificación de ramas).
+	\item Para solucionar los fallos:
+	\begin{itemize}
+		\item Añadir InterventionTimes a x\$other\$interventionTimes con los tiempos de las intervenciones para poder realizar tests (se rellena en BNB\_nr.cpp tras haber cambiado executeInterventions)
+		\item Adelantar la ejecución de intervenciones para que se realice antes de rellenar las estructuras de salida para evitar que las actualizaciones de poblacion de las intervenciones se realicen 1 samboleEvery despues de lo debido y para que la tabla de poblaciones y la de birth y death rates estén correctamente actualizadas y sincronizadas entre sí
+		\item Comentar la comprobación de totPopSize != totalPop en reduceTotalPopulation (interventions.cpp) porque al haberlo adelantado totPopSize no está actualizado
+		\item Añadir código para eliminar los genotipos con 0 población despues de realizar intervenciones para evitar el error que se obtenía: Unrecoverable exception: ti: popSize <= 0. spP.popSize = 0.000000. Aborting.
+		\item Adaptar los tests de intervenciones a estos nuevos cambios y comprobar que todos los tests se pasan correctamente
+	\end{itemize}
+	\item Tras esto ademas realizamos algunos cambios en el código pues durante estas modificaciones se vió que en numerosas ocasiones se ejecutaban fragmentos de código innecesarios, que en una ejecución de una simulación de gran tamaño suponían un gran aumento del tiempo de ejecución, para ello:
+	\begin{itemize}
+		\item Modificamos la funcion ExecuteInterventions de interventions.cpp:
+		\begin{itemize}
+			\item Hacer que devuelva true si hay intervencion y false si no y en caso de error solo lance excepción (esto permite el siguiente punto y permite obtener InterventionTimes desde fuera)
+			\item Hacer que solo se llame a UpdatePopulations si ha habido intervención (antes se ejecutaba en todas las iteraciones aunque no hubiese intervenciones)
+		\end{itemize}
+		\item Cambiar ParseWhatHappens, ahora devuelve void y si hay error solo lanza excepción
+	\end{itemize}
+\end{itemize}
+
+¿Optimización?
+
 \section{Tests de variables de usuario}
 
 \begin{itemize}

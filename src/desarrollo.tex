@@ -1,55 +1,93 @@
 \chapter{Desarrollo\label{sec:desarrollo}}
 
+\section{Introducción}
+TODO
+¿Ramas?
+¿Exprtk?
+¿Rcpp?
+¿R y C++?
+
 \section{Unificación de Ramas}
+
+Cómo se ha explicado en el punto 2 (TODO) al iniciar este trabajo se partía de 2 ramas con versiones distintas del programa OncoSimulR cada una con una funcionalidad recientemente implementada en cada una de ellas. Estas 2 ramas debían unificarse para proceder a la implementación de la nueva funcionalidad sobre la versión combinada de ambas.
+
+La unificación de ambas ramas se realizó de manrea manual, ya que el merge automático proporcionado por la herramienta Git generaba un gran número de conflictos y no respetaba la funcionalidad de las ramas. Al proceder, se decidió realizar el merge sobre la rama que contenía la funcionalidad del birth y death rate (explicada en el punto 2 TODO) por ser la que más modificaciones introducía sobre el código base de la simulación, y sobre esta se introdujeron los cambios correspondientes a la rama con la funcionalidad de las intervenciones (explicada en el punto 2 TODO).
+
+Para realizar la unificación de ambas ramas se procedió del siguiente modo:
+\begin{enumerate}
+	\item Sobre la rama que se ha indicado anteriormente se añadieron los ficheros de código R y C++ exclusivos de la funcionalidad de intervenciones (intervention.cpp, intervention.h, intervention.R, multivarioant\_hypergeometric.cpp y multivariant\_hypergeometric.h), los ficheros de testeo de esta funcionalidad (test.intervention.R y test.Z-intervention.R) y los ficheros de documentación y viñetas que expican e ilustran el funcionamiento de esta.
+	\item Tras esto se procedió a la modificación de la función updatePopulations del fichero intervention.cpp, encargada de actualizar las poblaciones de los distintos genotipos tras la ejecución de una intervención, para que emplease el birth y death rate implementado en la funcionalidad de la otra rama.
+	\item Se actualizó el flujo de código principal del algoritmo BNB de Mahler (TODO: explicado en el punto 2) en el fichero BNB\_nr.cpp para añadir las llamadas necesarias para añadir la funcionalidad correspondiente a la ejecución de las intervenciones.
+	\item Por último se modificaron las cabeceras y llamadas a todas las funciones del programa OncoSimulR para que tomasen de forma adecuada el argumento interventions, teniendo especial cuidado al tratar con los ficheros RcppExports.R, RcppExports.cpp y OncoSimulR\_init.c, encargados de la comunicación entre los ficheros en R y en C++ mediante la librería Rcpp.
+\end{enumerate}
+
+Posteriormente se realizó un merge automático con una tercera rama modificada por el tutor de este trabajo para incluir unas pequeñas modificaciones en la documentación del programa.
+
+Al finalizar este proceso, se procedió a la comprobación de que la funcionalidad de ambas ramas era correcta en la rama combinada mediante la ejecución de los tests pertinentes, y a asegurar que el merge no ha afectado al resto de características del programa. Todo este testeo se explicará de forma más detallada en el punto 5.1 TODO.
+
+\section{Optimización del código de intervenciones}
+Durante la realización del merge de las ramas previas, se encontraron algunos problemas de optimización en el código de las intervenciones que hacían que el tiempo de ejecución fuese más alto de lo deseado, por tanto antes de proseguir con la nueva funcionalidad se procedió a solucionar esto.
+
+El principal problema detectado en este aspecto eran fragments de código que se ejecutaban en todas las iteraciones, independeintemente de si se realizaban intervenciones o no, cuando solo era necesaria su ejecución cuando estas si se realizaban. Si bien estos fragmentos de código no eran en sí mismos muy costosos coimputacionalmente, en una simulación de gran tamaño, con un gran número de iteraciones (como las que se realizan habitualmente en est programa), estos fragmentos se estarían ejecutando de forma innecesaria un enorme número de veces, haciendo que la variación en el tiempo de ejecución sí fuese bastante significativo.
+
+Los cambios realizados, por tanto, fueron:
 \begin{itemize}
-	\item Intro ramas alberto y javier ¿Aquí o en estado del arte?
-	\item Merge entre las ramas de Alberto y Javier (se hizo a mano por el gran número de problemas que producía el merge automático, los cambios se hicieron sobre la rama de Alberto por ser la que más cambios introducía sobre el código "base" del programa de simulación):
+	\item Modificación de la función executeInterventions de interventions.cpp:
 	\begin{itemize}
-		\item Modificación de código de Javier en la función UpdatePopulations de interventions.cpp para que emplee birth y death rate como la rama de Alberto
-		\item Modificación de los parametros de entrada de todas las funciones de OncoSimulR para que tomen de forma adecuada el parámetro de intervenciones, así como actualización de RcppExports.R, RcppExports.cpp y OncoSimulR\_init.c con el mismo fin.
-	- Adición de los tests de intervenciones y los mans de intervenciones a la rama de alberto, así como interventions.cpp (con updatepopulations modificado), interventions.h, multivariant\_hypergeometric.cpp y multivariant\_hypergeometric.h
+		\item Cambiamos la función para que devuelva true si ha habido una intervención y false en caso contrario en lugar de devolver void como hasta ahora. Esto nos permite desde el algoritmo principal saber si ha habido o no intervención para ejecutar los fragmentos de código necesarios, además nos permite desde fuera obtener los tiempos en que se ejecutan las intervenciones, facilitándonos el testeo posteriormente.
+		\item  Hacemos que en la función sólamente se llame a updatePopulations (que actualiza las poblaciones de cada genotipo) en los casos en los que se ha ejecutado alguna intervención, puesto que son los ñunicos casos en que las poblaciones pueden haber cambiado.
 	\end{itemize}
-	\item Merge automático con los últimos cambios muy simples que introdujo Ramón sobre el programa en ese tiempo.
+	\item Modificamos también la función ParseWhatHappens para que devuelva void en vez de true/false. Antes devolvía true si se ejecutaba sin errores y en caso de error lanzaba una excepción y devolvía false, lo cual no tenía sentido, por tanto ahora no devuelve nada y en caso de error simplemente lanza una excepción.
 \end{itemize}
 
-\section{Corrección de errores previos y optimización del código}
+Tras esto de nuevo procedemos a comprobar que la funcionalidad es correcta mediante los tests explicados en el punto 5 TODO, y procedemos a comenzar con la nueva funcionalidad.
+
+\section{Implementación de variables de usuario y reglas}
+
+\subsection{En R}
+Desde R debemos hacer posible que el usuario pueda definir las variables de usuario que desee, y las reglas que quiere que se emplee para su cálculo y actualización a lo largo de la simulación, así como permitir que pase estas como argumento a la funcion OncoSimulIndiv de OncoSimulR, que es la función responsable de llevar a cambo la simulación.
+
+Para ello en primer lugar vemos como se deben definir las variables de usuario y las reglas en R:
 
 \begin{itemize}
-	\item Tras realizar el merge entres las ramas anteriores se detectaron una serie de fallos de la funcionalidad previa en los tests que fue necesario solucionar para proceder a la implementación de la nueva funcionalidad. Estos fallos estaban localizados en los tests de la funcionalidad de intervenciones que se ha eplicado anteriormente (o bien en estado del arte o en la sección de unificación de ramas).
-	\item Para solucionar los fallos:
+	\item Variables de usuario: las variables de usuario hemos visto en el punto 3.1 que simplemente contienen un nombre que identifica a la variable, y un valor numérico. Por tanto el usuario definirá en R una simple lista con todas las variables de usuario que desee crear para la simulación con estos atributos, del siguente modo:
+
 	\begin{itemize}
-		\item Añadir InterventionTimes a x\$other\$interventionTimes con los tiempos de las intervenciones para poder realizar tests (se rellena en BNB\_nr.cpp tras haber cambiado executeInterventions)
-		\item Adelantar la ejecución de intervenciones para que se realice antes de rellenar las estructuras de salida para evitar que las actualizaciones de poblacion de las intervenciones se realicen 1 samboleEvery despues de lo debido y para que la tabla de poblaciones y la de birth y death rates estén correctamente actualizadas y sincronizadas entre sí
-		\item Comentar la comprobación de totPopSize != totalPop en reduceTotalPopulation (interventions.cpp) porque al haberlo adelantado totPopSize no está actualizado
-		\item Añadir código para eliminar los genotipos con 0 población despues de realizar intervenciones para evitar el error que se obtenía: Unrecoverable exception: ti: popSize <= 0. spP.popSize = 0.000000. Aborting.
-		\item Adaptar los tests de intervenciones a estos nuevos cambios y comprobar que todos los tests se pasan correctamente
+		\item Name: string que contiene el nombre que identificará a la variable, debe ser único para la variable.
+		\item Value: valor inicial que tomará la veriable al inicio de la simulación.
 	\end{itemize}
-	\item Tras esto ademas realizamos algunos cambios en el código pues durante estas modificaciones se vió que en numerosas ocasiones se ejecutaban fragmentos de código innecesarios, que en una ejecución de una simulación de gran tamaño suponían un gran aumento del tiempo de ejecución, para ello:
+
+	\item Reglas: del mismo modo hemos visto en el 3.1 que las reglas constan de un ID, un Condition y una Action. De igual forma el usuario definirá estas reglas ediante una lista en R de la forma:
+
 	\begin{itemize}
-		\item Modificamos la funcion ExecuteInterventions de interventions.cpp:
-		\begin{itemize}
-			\item Hacer que devuelva true si hay intervencion y false si no y en caso de error solo lance excepción (esto permite el siguiente punto y permite obtener InterventionTimes desde fuera)
-			\item Hacer que solo se llame a UpdatePopulations si ha habido intervención (antes se ejecutaba en todas las iteraciones aunque no hubiese intervenciones)
-		\end{itemize}
-		\item Cambiar ParseWhatHappens, ahora devuelve void y si hay error solo lanza excepción
+		\item id: string identifica la regla y la distingue del resto, debe ser único para cada regla.
+		\item Condition: expresión con valor true/false que determina si se ejecuta o no la regla. Puede emplear las variables especificadas en el punto 3.1.
+		\item Action: una o varias expresiones con valor numérico separadas por ";" que determinan el valor que tomarán las variables de usuario en caso de que se ejecute la rega. Del mismo modo que el campo Condition, puede emplear las variables especificadas en el punto 3.1.
 	\end{itemize}
 \end{itemize}
 
-\section{Implementación en R}
+Partiendo de estas definiciones, creamos en R una serie de funciones que comprueban que el usuario ha especificado las variables de usuario y reglas de forma correcta y las adaptan para que puedan pasartse a C++ de forma correcta mediante la librería Rcpp. Estas funciones son en el caso de las variables de usuario:
 
 \begin{itemize}
-	\item creación de variables y reglas en R
-	\item verificación de:
-	\begin{itemize}
-		\item no hay 2 uservars con mismo nombre
-		\item no hay 2 reglas con mismo id
-		\item están bien especificadas (reglas y variables tienen todos los atributos, las reglas tienen la estructura correcta en condition y action)
-		\item Modificación de los n\_x en condition y action de las reglas
-	\end{itemize}
-	\item Modificación de la llamada a oncoSimulIndiv añadiendo userVars y rules
+	\item check\_same\_name: comprueba que en la lista definida no existen varias variables de usuario con el mismo nombre.
+	\item verify\_user\_vars: comprueba que todas las variables de usuario definidas en la lista tienen todos los atributos necesarios (Name y Value).
+	\item createUserVars: mediante llamadas a las 2 funciones anteriores comprueba que la lista de variables de usuario definida es correcta, y si lo es, la devuelve.
 \end{itemize}
 
-\section{Implementación en C++}
+Y en el caso de las reglas:
+
+\begin{itemize}
+	\item check\_double\_rule\_id: comprueba que en la lista de reglas definida no hay 2 reglas con el mismo id.
+	\item check\_action: comprueba la correcta especificación de la expresión del campo Action, para ello comprueba que, si hay varias expresiones, estas están correctamente separadas por ";" y que cada una de las expresiones tiene la forma: <variable de usuario> = <expresión>.
+	\item verify\_rules: comprueba que las reglas contienen todos los atributos necesarios (id, Action y Condition), y que estos son correctos llamadno a las 2 funciones anteriores. 
+	\item transform\_rule: modifica las expresiones Action y Condition de las reglas, ya que aunque en estas las variables n\_X (explicadas en 3.1) se especifican como n\_A, n\_B, etc; en C++ los genotipos se definen con nñumeros y no con letras, por tanto esta función transforma n\_A, n\_B... en n\_1, n\_2... 
+	\item adapt\_rules\_to\_cpp: mediante llamadas a la función anterior, modifica las expresiones action y condition de las distintas reglas definidas en la lista para adaptarlas a C++.
+	\item createRules: mediante llamadas a verify\_rules y a adapt\_rules\_to\_cpp comprueba que las reglas definidas son correctas y las adapta a C++ devolviendo la lista de reglas ya transformada.
+\end{itemize}
+
+Por último, en R, se deben modificar las llamadas y la cabecera de la función OncoSimulIndiv y de las demás funciones internas de OncoSimulR para que reciban de forma adecuada los nuevos argumentos userVars (lista de variables de usuario) y rules (listado de reglas).
+
+\subsection{En C++}
 
 \begin{itemize}
 	\item estructuras Rule y UserVarsInfo
