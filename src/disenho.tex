@@ -7,35 +7,35 @@ Las variables de usuario son variables arbitrariamente complejas que un usuario 
 
 Por tanto podemos determinar que por un lado tendremos un listado de variables, cada una de las cuales debera contener:
 \begin{itemize}
-	\item Nombre: nombre de la variable de usuario que permite identificarla y diferenciarla de el resto de variables definidas.
-	\item Valor: valor numérico de la variable en cada momento.
+	\item \textbf{Nombre}: nombre de la variable de usuario que permite identificarla y diferenciarla de el resto de variables definidas.
+	\item \textbf{Valor}: valor numérico de la variable en cada momento.
 \end{itemize}
 
 Por otro lado tendremos un listado con las reglas que permiten modificar y actualizar las distintas variables definidas. Estas reglas contan de:
 
 \begin{itemize}
-	\item ID: identificador único de cada regla que permite diferenciarla del resto de reglas definidas.		
-	\item Condition: la condición que, si se cumple, hará que la variable de usuario se modifique.
-	\item Action: acción que se llevará a cabo en caso de que la "Condition" se cumpla, es decir, es el conjunto de modificaciones a realizar a las variables de usuario en caso de que se cumpla la condición de la regla. podrá contener una o varias fórmulas que determinarán los nuevos valores de una o varias variables de usuario.
+	\item \textbf{ID}: identificador único de cada regla que permite diferenciarla del resto de reglas definidas.		
+	\item \textbf{Condition}: la condición que, si se cumple, hará que la variable de usuario se modifique.
+	\item \textbf{Action}: acción que se llevará a cabo en caso de que la \textbf{Condition} se cumpla, es decir, es el conjunto de modificaciones a realizar a las variables de usuario en caso de que se cumpla la condición de la regla. podrá contener una o varias fórmulas que determinarán los nuevos valores de una o varias variables de usuario.
 \end{itemize}
 
 En este punto debemos mencionar también, qué variables del programa se ha decidido que sean empleables para la modificación de variables y definición de las reglas por parte del usuario y los motivos por los que se ha decidido esto. Las variables disponibles para la definición de las reglas son:
 
 \begin{itemize}
-	\item birthRate: la tasa de nacimiento correspondiente a lcada genotipo, es decir,es un nñumero que determina la probabilidad que tiene una célula con este genotipo de reproducirse, y por tanto aumentar su número total en 1 en un ciclo de tiempo.
-	\item deathRate: la tasa de muerte correspondiente a cada genotipo, es decir, es un número que determina la probabilidad que tiene una célula con este genotipo de morir, y por tanto reducir su número total en 1 en un ciclo de tiempo.
-	\item mutationRate: la tasa de mutación correspondiente a cada genotipo, es decir, es un número que determina la probabilidad que tiene una célula con este genotipo de mutar, y por tanto variar alguno de sus genes, pasando de ser de este genotipo a ser de otro genotipo distinto en 1 en un ciclo de tiempo.
-	\item N: número total de células en la simulación, teniendo en cuenta todos los genotipos existentes.
-	\item n\_x: número de células de un determinado genotipo concreto, por ejemplo, n\_A será el número de células del genotipo A, y n\_A\_B las del genotipo A\_B
-	\item T: tiempo transcurrido desde el inicio de la simulación, en segundos, con precisión de milisegundos.
-	\item Variables de usuario: otras variables de usuario definidas en la misma simulación.		
+	\item \textbf{birthRate}: la tasa de nacimiento correspondiente a lcada genotipo, es decir,es un nñumero que determina la probabilidad que tiene una célula con este genotipo de reproducirse, y por tanto aumentar su número total en 1 en un ciclo de tiempo.
+	\item \textbf{deathRate}: la tasa de muerte correspondiente a cada genotipo, es decir, es un número que determina la probabilidad que tiene una célula con este genotipo de morir, y por tanto reducir su número total en 1 en un ciclo de tiempo.
+	\item \textbf{mutationRate}: la tasa de mutación correspondiente a cada genotipo, es decir, es un número que determina la probabilidad que tiene una célula con este genotipo de mutar, y por tanto variar alguno de sus genes, pasando de ser de este genotipo a ser de otro genotipo distinto en 1 en un ciclo de tiempo.
+	\item \textbf{N}: número total de células en la simulación, teniendo en cuenta todos los genotipos existentes.
+	\item \textbf{n\_x}: número de células de un determinado genotipo concreto, por ejemplo, \textbf{n\_A} será el número de células del genotipo A, y \textbf{n\_A\_B} las del genotipo A\_B
+	\item \textbf{T}: tiempo transcurrido desde el inicio de la simulación, en segundos, con precisión de milisegundos.
+	\item \textbf{Variables de usuario}: otras variables de usuario definidas en la misma simulación.		
 \end{itemize}
 
 Estas variables se han añadido con la finalidad de dar a las variables de usuario la mayor flexibilidad posible para que el usuario las defina de acuerdo a sus necesidades, considerando todas las variables interesantes tanto para la terapia adaptativa como desde un punto de vista biológico para estudiar su evolución.
 
-Las variables N, n\_x y T se consideran necesarias para la terapia adaptativa, ya que permiten definir variables de usuario que se modifiquen de auerdo a la evolución del tamaño del tumor (N), a la cantidad de las células de un determinado tipo, que se consideren más perjudiciales o sensibles a un determinado tratamiento (n\_x) o al tiempo transcurrido (T). Estas variables definidas de acuerdo a estos atributos se podrían emplear luego para definir las intervenciones que permite el programa OncoSimulR, permitiendo adaptarlas de forma adecuada a las distintas combinaciones posibles de estos 3 atributos a lo largo de la simulación, generando así la posibilidad de simular terapia adaptativa. A estas 3 variables se les suman las propias variables de usuario, para poder así generar combinaciones aún más complejas que permitan simular escenarios altamente enrevesados.
+Las variables \textbf{N}, \textbf{n\_x} y \textbf{T} se consideran necesarias para la terapia adaptativa, ya que permiten definir variables de usuario que se modifiquen de auerdo a la evolución del tamaño del tumor (\textbf{N}), a la cantidad de las células de un determinado tipo, que se consideren más perjudiciales o sensibles a un determinado tratamiento (\textbf{n\_x}) o al tiempo transcurrido (\textbf{T}). Estas variables definidas de acuerdo a estos atributos se podrían emplear luego para definir las intervenciones que permite el programa OncoSimulR, permitiendo adaptarlas de forma adecuada a las distintas combinaciones posibles de estos 3 atributos a lo largo de la simulación, generando así la posibilidad de simular terapia adaptativa. A estas 3 variables se les suman las propias variables de usuario, para poder así generar combinaciones aún más complejas que permitan simular escenarios altamente enrevesados.
 
-Las otras variables  birthRate, deathRate y mutationRate, se han añadido con una finalidad más informativa, ya que, a pesar de no ser tan interesantes desde el punto de vista de la terapia adaptativa (aunque pueden aplicarse en algunos casos), dan una información importante acerca de la adaptabilidad de los distintos genotipos a lo largo de la simulación, haciendo que el estudio de la evolución de variables de usuario que sean combinación de estas variables a lo largo de la simulación pueda tener un gran interés para el estudio tumoral.
+Las otras variables  \textbf{birthRate}, \textbf{deathRate} y \textbf{mutationRate}, se han añadido con una finalidad más informativa, ya que, a pesar de no ser tan interesantes desde el punto de vista de la terapia adaptativa (aunque pueden aplicarse en algunos casos), dan una información importante acerca de la adaptabilidad de los distintos genotipos a lo largo de la simulación, haciendo que el estudio de la evolución de variables de usuario que sean combinación de estas variables a lo largo de la simulación pueda tener un gran interés para el estudio tumoral.
 
 \section{Algoritmo de actualización}
 
@@ -64,7 +64,7 @@ En rasgos generales el algoritmo de actualización es:
 
 Para obtener los datos de evolución de las variables de usuario definidas en el tiempo a lo largo de la simulación, se deberán modificar la salida del programa de simulación para que incluya estos. Se debe añadir por tanto a la salida
 \begin{itemize}
-	\item Una lista con los nombres ("ids") de las variables de usuario creadas.
+	\item Una lista con los nombres (``ids'') de las variables de usuario creadas.
 	\item Una matriz con los valores de las variables de usuario en cada unidad de tiempo muestreada (en el mismo orden que los nombres de las variables en en la lista de nombres de las variables de usuario).	
 
 La finalidad de añadir estos datos a la salida de la simulación es poder emplear las variables de usuario (que son arbitrariamente complejas) como datos de salida y no solo como valores a emplear en otros procesos como las intervenciones. Por ejemplo, obtener estos datos permite al usuario graficar la evolución en el tiempo de algunas variables de usuario creadas, lo que puede ser de gran interés para evaluar la evolución del tumor en la simulación. Además, la adición de estos datos en la salida facilitará enormemente las labores de testeo de la funcionalidad implementada.	

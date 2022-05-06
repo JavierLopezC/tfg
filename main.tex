@@ -26,6 +26,54 @@
 
 % Rerefencias
 \bibliography{src/bibliografia}
+\usepackage{graphicx}
+\usepackage{listings}
+
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.84]{beramono}
+\usepackage[utf8]{inputenc}
+
+\lstnewenvironment{CPP}
+{\lstset{ %
+  language=C++,                
+  basicstyle=\small,     
+  stepnumber=1,                                       
+  numbersep=5pt,                 
+  backgroundcolor=\color{white},  
+  showspaces=false,             
+  showstringspaces=false,         
+  showtabs=false,                 
+  frame=single,                   
+  rulecolor=\color{black},       
+  tabsize=4,                               
+  keywordstyle=\color{blue},          
+  commentstyle=\color{brown},    
+  stringstyle=\color{red},       
+  escapeinside={\%*}{*)},        
+  morekeywords={*,...}              
+}}{}
+
+\lstnewenvironment{R}
+{\lstset{ %
+  language=R,                
+  basicstyle=\small,     
+  stepnumber=1,                                       
+  numbersep=5pt,                 
+  backgroundcolor=\color{white},  
+  showspaces=false,             
+  showstringspaces=false,         
+  showtabs=false,                 
+  frame=single,                   
+  rulecolor=\color{black},       
+  tabsize=4,                                         
+  keywordstyle=\color{blue},          
+  commentstyle=\color{brown},    
+  stringstyle=\color{red},       
+  escapeinside={\%*}{*)},        
+  morekeywords={*,...}              
+}}{}
+
+
 
 % Inicio del documento
 \begin{document}

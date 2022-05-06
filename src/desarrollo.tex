@@ -16,7 +16,7 @@ La unificación de ambas ramas se realizó de manrea manual, ya que el merge aut
 Para realizar la unificación de ambas ramas se procedió del siguiente modo:
 \begin{enumerate}
 	\item Sobre la rama que se ha indicado anteriormente se añadieron los ficheros de código R y C++ exclusivos de la funcionalidad de intervenciones (intervention.cpp, intervention.h, intervention.R, multivarioant\_hypergeometric.cpp y multivariant\_hypergeometric.h), los ficheros de testeo de esta funcionalidad (test.intervention.R y test.Z-intervention.R) y los ficheros de documentación y viñetas que expican e ilustran el funcionamiento de esta.
-	\item Tras esto se procedió a la modificación de la función updatePopulations del fichero intervention.cpp, encargada de actualizar las poblaciones de los distintos genotipos tras la ejecución de una intervención, para que emplease el birth y death rate implementado en la funcionalidad de la otra rama.
+	\item Tras esto se procedió a la modificación de la función \textbf{updatePopulations} del fichero intervention.cpp, encargada de actualizar las poblaciones de los distintos genotipos tras la ejecución de una intervención, para que emplease el birth y death rate implementado en la funcionalidad de la otra rama.
 	\item Se actualizó el flujo de código principal del algoritmo BNB de Mahler (TODO: explicado en el punto 2) en el fichero BNB\_nr.cpp para añadir las llamadas necesarias para añadir la funcionalidad correspondiente a la ejecución de las intervenciones.
 	\item Por último se modificaron las cabeceras y llamadas a todas las funciones del programa OncoSimulR para que tomasen de forma adecuada el argumento interventions, teniendo especial cuidado al tratar con los ficheros RcppExports.R, RcppExports.cpp y OncoSimulR\_init.c, encargados de la comunicación entre los ficheros en R y en C++ mediante la librería Rcpp.
 \end{enumerate}
@@ -32,12 +32,12 @@ El principal problema detectado en este aspecto eran fragments de código que se
 
 Los cambios realizados, por tanto, fueron:
 \begin{itemize}
-	\item Modificación de la función executeInterventions de interventions.cpp:
+	\item Modificación de la función \textbf{executeInterventions} de interventions.cpp:
 	\begin{itemize}
 		\item Cambiamos la función para que devuelva true si ha habido una intervención y false en caso contrario en lugar de devolver void como hasta ahora. Esto nos permite desde el algoritmo principal saber si ha habido o no intervención para ejecutar los fragmentos de código necesarios, además nos permite desde fuera obtener los tiempos en que se ejecutan las intervenciones, facilitándonos el testeo posteriormente.
-		\item  Hacemos que en la función sólamente se llame a updatePopulations (que actualiza las poblaciones de cada genotipo) en los casos en los que se ha ejecutado alguna intervención, puesto que son los ñunicos casos en que las poblaciones pueden haber cambiado.
+		\item  Hacemos que en la función sólamente se llame a \textbf{updatePopulations} (que actualiza las poblaciones de cada genotipo) en los casos en los que se ha ejecutado alguna intervención, puesto que son los ñunicos casos en que las poblaciones pueden haber cambiado.
 	\end{itemize}
-	\item Modificamos también la función ParseWhatHappens para que devuelva void en vez de true/false. Antes devolvía true si se ejecutaba sin errores y en caso de error lanzaba una excepción y devolvía false, lo cual no tenía sentido, por tanto ahora no devuelve nada y en caso de error simplemente lanza una excepción.
+	\item Modificamos también la función \textbf{parseWhatHappens} para que devuelva void en vez de true/false. Antes devolvía true si se ejecutaba sin errores y en caso de error lanzaba una excepción y devolvía false, lo cual no tenía sentido, por tanto ahora no devuelve nada y en caso de error simplemente lanza una excepción.
 \end{itemize}
 
 Tras esto de nuevo procedemos a comprobar que la funcionalidad es correcta mediante los tests explicados en el punto 5 TODO, y procedemos a comenzar con la nueva funcionalidad.
@@ -45,49 +45,155 @@ Tras esto de nuevo procedemos a comprobar que la funcionalidad es correcta media
 \section{Implementación de variables de usuario y reglas}
 
 \subsection{En R}
-Desde R debemos hacer posible que el usuario pueda definir las variables de usuario que desee, y las reglas que quiere que se emplee para su cálculo y actualización a lo largo de la simulación, así como permitir que pase estas como argumento a la funcion OncoSimulIndiv de OncoSimulR, que es la función responsable de llevar a cambo la simulación.
+
+Desde R debemos hacer posible que el usuario pueda definir las variables de usuario que desee, y las reglas que quiere que se emplee para su cálculo y actualización a lo largo de la simulación, así como permitir que pase estas como argumento a la funcion \textbf{OncoSimulIndiv} de OncoSimulR, que es la función responsable de llevar a cambo la simulación.
 
 Para ello en primer lugar vemos como se deben definir las variables de usuario y las reglas en R:
 
 \begin{itemize}
-	\item Variables de usuario: las variables de usuario hemos visto en el punto 3.1 que simplemente contienen un nombre que identifica a la variable, y un valor numérico. Por tanto el usuario definirá en R una simple lista con todas las variables de usuario que desee crear para la simulación con estos atributos, del siguente modo:
+	\item \textbf{Variables de usuario}: las variables de usuario hemos visto en el punto 3.1 que simplemente contienen un nombre que identifica a la variable, y un valor numérico. Por tanto el usuario definirá en R una simple lista con todas las variables de usuario que desee crear para la simulación con estos atributos, del siguente modo:
+
+\begin{R}
+userVars <- list(
+        list(Name = "user_var_1",
+            Value = 0
+        ),
+        list(Name = "user_var_2",
+            Value = 0
+        ),
+        list(Name = "user_var_3",
+            Value = 0
+        )
+    )
+\end{R}
 
 	\begin{itemize}
 		\item Name: string que contiene el nombre que identificará a la variable, debe ser único para la variable.
 		\item Value: valor inicial que tomará la veriable al inicio de la simulación.
 	\end{itemize}
 
-	\item Reglas: del mismo modo hemos visto en el 3.1 que las reglas constan de un ID, un Condition y una Action. De igual forma el usuario definirá estas reglas ediante una lista en R de la forma:
+	\item \textbf{Reglas}: del mismo modo hemos visto en el 3.1 que las reglas constan de un ID, un Condition y una Action. De igual forma el usuario definirá estas reglas ediante una lista en R de la forma:
 
+\begin{R}
+rules <- list(
+        list(ID = "rule_1",
+            Condition = "T > 20",
+            Action = "user_var_1 = 1"
+        ),list(ID = "rule_2",
+            Condition = "T > 30",
+            Action = "user_var_2 = 2"
+        ),list(ID = "rule_3",
+            Condition = "T > 40",
+            Action = "user_var_3 = 3;user_var_2 = 1"
+        )
+    )
+\end{R}
 	\begin{itemize}
-		\item id: string identifica la regla y la distingue del resto, debe ser único para cada regla.
+		\item ID: string identifica la regla y la distingue del resto, debe ser único para cada regla.
 		\item Condition: expresión con valor true/false que determina si se ejecuta o no la regla. Puede emplear las variables especificadas en el punto 3.1.
-		\item Action: una o varias expresiones con valor numérico separadas por ";" que determinan el valor que tomarán las variables de usuario en caso de que se ejecute la rega. Del mismo modo que el campo Condition, puede emplear las variables especificadas en el punto 3.1.
+		\item Action: una o varias expresiones con valor numérico separadas por ``;'' que determinan el valor que tomarán las variables de usuario en caso de que se ejecute la rega. Del mismo modo que el campo Condition, puede emplear las variables especificadas en el punto 3.1.
 	\end{itemize}
 \end{itemize}
 
 Partiendo de estas definiciones, creamos en R una serie de funciones que comprueban que el usuario ha especificado las variables de usuario y reglas de forma correcta y las adaptan para que puedan pasartse a C++ de forma correcta mediante la librería Rcpp. Estas funciones son en el caso de las variables de usuario:
 
 \begin{itemize}
-	\item check\_same\_name: comprueba que en la lista definida no existen varias variables de usuario con el mismo nombre.
-	\item verify\_user\_vars: comprueba que todas las variables de usuario definidas en la lista tienen todos los atributos necesarios (Name y Value).
-	\item createUserVars: mediante llamadas a las 2 funciones anteriores comprueba que la lista de variables de usuario definida es correcta, y si lo es, la devuelve.
+	\item \textbf{check\_same\_name}: comprueba que en la lista definida no existen varias variables de usuario con el mismo nombre.
+	\item \textbf{verify\_user\_vars}: comprueba que todas las variables de usuario definidas en la lista tienen todos los atributos necesarios (Name y Value).
+	\item \textbf{createUserVars}: mediante llamadas a las 2 funciones anteriores comprueba que la lista de variables de usuario definida es correcta, y si lo es, la devuelve.
 \end{itemize}
 
 Y en el caso de las reglas:
 
 \begin{itemize}
-	\item check\_double\_rule\_id: comprueba que en la lista de reglas definida no hay 2 reglas con el mismo id.
-	\item check\_action: comprueba la correcta especificación de la expresión del campo Action, para ello comprueba que, si hay varias expresiones, estas están correctamente separadas por ";" y que cada una de las expresiones tiene la forma: <variable de usuario> = <expresión>.
-	\item verify\_rules: comprueba que las reglas contienen todos los atributos necesarios (id, Action y Condition), y que estos son correctos llamadno a las 2 funciones anteriores. 
-	\item transform\_rule: modifica las expresiones Action y Condition de las reglas, ya que aunque en estas las variables n\_X (explicadas en 3.1) se especifican como n\_A, n\_B, etc; en C++ los genotipos se definen con nñumeros y no con letras, por tanto esta función transforma n\_A, n\_B... en n\_1, n\_2... 
-	\item adapt\_rules\_to\_cpp: mediante llamadas a la función anterior, modifica las expresiones action y condition de las distintas reglas definidas en la lista para adaptarlas a C++.
-	\item createRules: mediante llamadas a verify\_rules y a adapt\_rules\_to\_cpp comprueba que las reglas definidas son correctas y las adapta a C++ devolviendo la lista de reglas ya transformada.
+	\item \textbf{check\_double\_rule\_id}: comprueba que en la lista de reglas definida no hay 2 reglas con el mismo id.
+	\item \textbf{check\_action}: comprueba la correcta especificación de la expresión del campo Action, para ello comprueba que, si hay varias expresiones, estas están correctamente separadas por ``;'' y que cada una de las expresiones tiene la forma: <variable de usuario> = <expresión>.
+	\item \textbf{verify\_rules}: comprueba que las reglas contienen todos los atributos necesarios (id, Action y Condition), y que estos son correctos llamando a las 2 funciones anteriores. 
+	\item \textbf{transform\_rule}: modifica las expresiones Action y Condition de las reglas, ya que aunque en estas las variables \textbf{n\_X} (explicadas en 3.1) se especifican como \textbf{n\_A}, \textbf{n\_B}, etc; en C++ los genotipos se definen con números y no con letras, por tanto esta función transforma \textbf{n\_A}, \textbf{n\_B}... en \textbf{n\_1}, \textbf{n\_2}... 
+	\item \textbf{adapt\_rules\_to\_cpp}: mediante llamadas a la función anterior, modifica las expresiones action y condition de las distintas reglas definidas en la lista para adaptarlas a C++.
+	\item \textbf{createRules}: mediante llamadas a \textbf{verify\_rules} y a \textbf{adapt\_rules\_to\_cpp} comprueba que las reglas definidas son correctas y las adapta a C++ devolviendo la lista de reglas ya transformada.
 \end{itemize}
 
-Por último, en R, se deben modificar las llamadas y la cabecera de la función OncoSimulIndiv y de las demás funciones internas de OncoSimulR para que reciban de forma adecuada los nuevos argumentos userVars (lista de variables de usuario) y rules (listado de reglas).
+Por último, en R, se han modificado las llamadas y la cabecera de la función OncoSimulIndiv y de las demás funciones internas de OncoSimulR para que reciban de forma adecuada los nuevos argumentos userVars (lista de variables de usuario) y rules (listado de reglas).
 
 \subsection{En C++}
+
+
+
+Ya en C++ procedemos a desarrollar en TAD que maneja las variables de usuario y reglas definidas por el usuario en R. Para ello en primer lugar definimos las estructuras que contienen estos objetos. Para las reglas creamos la estructura \textbf{Rule} en C++, del siguiente modo:
+
+\begin{CPP}
+typedef struct {
+    std::string id; // identifier of the rule
+    std::string condition; // condition that must be true for the rule to execute
+    std::string action; // action to be performed when the condition is satisfied
+} Rule;
+\end{CPP}
+
+Donde todos los campos son strings que corresponden exactamente a los atributos especificados en R por el usuario, explicados en el punto anterior 4.4.1.
+
+Por otro lado definimos otra estructura en C++ llamada \textbf{UserVarsInfo}, que contiene las variables de usuario, y otros datos necesarios para operar adecuadamente con ellas. Esta estructura tiene el siguiente aspecto:
+
+\begin{CPP}
+typedef struct{
+    std::map<std::string, double> userVars; // maps a user variable name to its current value
+    std::vector<Rule> rules; // rules that apply to the group of user variables
+    std::map<std::string, double> mapGenoToPop; // variable that maps a genotype to its population
+}UserVarsInfo;
+\end{CPP}
+
+Donde:
+\begin{itemize}
+	\item \textbf{userVars} es un mapa cuyas claves son strings con los nombres de las variables de usuario definidas y los valores son números reales que definen el valor de las distintas variables.
+	\item \textbf{rules} es un listado con las reglas que controlan la actualización de las variables, definidas como estructuras Rule definidas justo antes.
+	\item \textbf{mapGenoToPop} es un mapa que contiene las poblaciones de todos los genotipos en un momento dado de la simulación, es necesario para poder operar con estos valores al actualizar las variables de usuario empleando las reglas.
+\end{itemize}
+
+Una vez tenemos estas estructuras definidas, procedemos a la elaboración de las distintas funciones que implementan la funcionalidad del TAD. Comenzando por algunas funciones muy triviales que crean, destruyen, comparan, imprimen e implementan alguna funcionalidad muy simple de estas estructuras:
+
+\begin{itemize}
+	\item Función que rellena la estructura Rule: \\
+\begin{CPP}
+Rule createRule(std::string id, std::string condition, std::string action);
+\end{CPP}
+	\item Función que rellena la estructura UserVarsInfo:\\
+\begin{CPP}
+UserVarsInfo createUserVarsInfo(Rcpp::List Rules,
+         Rcpp::List userVars,
+         const fitnessEffectsAll& fitnessEffects, 
+         const std::vector<spParamsP>& popParams, 
+         std::vector<Genotype> Genotypes);
+\end{CPP}
+	\item Función que añade una variable de usuario al mapa de variables de usuario de UserVarsInfo:\\
+\begin{CPP}
+UserVarsInfo addUserVar(UserVarsInfo uvif, std::string name, double value);
+\end{CPP}
+	\item Función que añade una regla al listado de reglas de UserVarsInfo:\\
+\begin{CPP}
+UserVarsInfo addRule(UserVarsInfo uvif, Rule r);
+\end{CPP}
+	\item Función que compara dos reglas definidas por la estructura Rule:\\
+\begin{CPP}
+int compareRules(Rule r1, Rule r2);
+\end{CPP}
+	\item Función que elimina una regla del listado de reglas de la estructura UserVarsInfo:\\
+\begin{CPP}
+UserVarsInfo destroyRule(UserVarsInfo uvif, Rule r);
+\end{CPP}
+	\item Función que imprime por pantalla una regla definida por la esrtuctura Rule:\\
+\begin{CPP}
+void printRule(Rule r);
+\end{CPP}
+	\item Función que imprime por pantalla las variables de usuario y reglas contenidas es una variable del tipo UserVarsInfo:\\
+\begin{CPP}
+void printUserVarsInfo(UserVarsInfo uvif);
+\end{CPP}
+	\item Función que comprueba que cada una de las subexpresiones separadas por ``;'' contenidas en el atributo Action de la estructura Rule están bien definidas, con la forma <userVar> = <expresión>:\\
+\begin{CPP}
+bool isValid(std::string equation);
+\end{CPP}
+\end{itemize}
+
 
 \begin{itemize}
 	\item estructuras Rule y UserVarsInfo
