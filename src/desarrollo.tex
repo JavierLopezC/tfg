@@ -1,11 +1,16 @@
 \chapter{Desarrollo\label{sec:desarrollo}}
 
 \section{Introducción}
-TODO
-¿Ramas?
-¿Exprtk?
-¿Rcpp?
-¿R y C++?
+
+En esta sección se va a explicar en primer lugar cómo se ha procedido con la unificación de las dos ramas principales con funcionalidad divergente de las que se partía, incluyendo la solución de los errores derivados del merge realizado, asñi como de errores previos de funcionalidad independientes del merge. Tras esto se procederá a la explicación de la implementación realizada para la funcionalidad definida en el apartado de diseño.
+
+El desarrollo de los ficheros de código que componen esta funcionalidad se ha realizado en los lenguajes R y C++ por ser los lenguajes en los que ya está desarrollado el grueso del programa \textbf{OncoSimulR}. R se emplea para la interacción con el usuario, por ser un lenguaje muy común en bioinformática; por su parte C++ está presente para la ejecución del algoritmo de simulación, por er un lenguaje más eficiente para la ejecución de algoritmos complejos, reduciendo significativamente el coste temporal de ejecución de la simulación.
+
+A lo largo de este apartado se mencionará reitradamente el uso de las librerías \textbf{Rcpp} y \textbf{ExprTk}.
+\begin{itemize}
+	\item \textbf{Rcpp} es paquete del lenguaje R que permite el paso de datos y objetos entre los lenguajes R y C++, transformando los tipos de dato de uno de los lenguajes a sus equivalentes más próximos en el otro. De este modo, este paquete permite la comunicación fluida entre ambas partes del programa, la parte dedicada a la comunicación con el usuario (desarrollada en R) y la parte computacionalmente más constosa que implementa el grueso del algoritmo de simulación tumoral (desarrollada en C++).
+	\item \textbf{ExprTk} es una librería definida en C++ que permite el parseo de expresiones matemáticas complejas. Esta librería ya estaba siendo empleada en el programa para el parseo de las expresiones que definen las intervenciones, pero en esta nueva funcionalidad va a ser empleada también para parsear las expresiones que permitirán la modificación de las variables de usuario en tiempo de simulación.
+\end{itemize}
 
 \section{Unificación de Ramas}
 
@@ -51,7 +56,7 @@ Desde R debemos hacer posible que el usuario pueda definir las variables de usua
 Para ello en primer lugar vemos como se deben definir las variables de usuario y las reglas en R:
 
 \begin{itemize}
-	\item \textbf{Variables de usuario}: las variables de usuario hemos visto en el punto 3.1 que simplemente contienen un nombre que identifica a la variable, y un valor numérico. Por tanto el usuario definirá en R una simple lista con todas las variables de usuario que desee crear para la simulación con estos atributos, del siguente modo:
+	\item \textbf{Variables de usuario}: las variables de usuario hemos visto en el punto 3.2 que simplemente contienen un nombre que identifica a la variable, y un valor numérico. Por tanto el usuario definirá en R una simple lista con todas las variables de usuario que desee crear para la simulación con estos atributos, del siguente modo:
 
 \begin{R}
 userVars <- list(
@@ -72,7 +77,7 @@ userVars <- list(
 		\item Value: valor inicial que tomará la veriable al inicio de la simulación.
 	\end{itemize}
 
-	\item \textbf{Reglas}: del mismo modo hemos visto en el 3.1 que las reglas constan de un ID, un Condition y una Action. De igual forma el usuario definirá estas reglas ediante una lista en R de la forma:
+	\item \textbf{Reglas}: del mismo modo hemos visto en el 3.2 que las reglas constan de un ID, un Condition y una Action. De igual forma el usuario definirá estas reglas ediante una lista en R de la forma:
 
 \begin{R}
 rules <- list(
@@ -90,8 +95,8 @@ rules <- list(
 \end{R}
 	\begin{itemize}
 		\item ID: string identifica la regla y la distingue del resto, debe ser único para cada regla.
-		\item Condition: expresión con valor true/false que determina si se ejecuta o no la regla. Puede emplear las variables especificadas en el punto 3.1.
-		\item Action: una o varias expresiones con valor numérico separadas por ``;'' que determinan el valor que tomarán las variables de usuario en caso de que se ejecute la rega. Del mismo modo que el campo Condition, puede emplear las variables especificadas en el punto 3.1.
+		\item Condition: expresión con valor true/false que determina si se ejecuta o no la regla. Puede emplear las variables especificadas en el punto 3.2.
+		\item Action: una o varias expresiones con valor numérico separadas por ``;'' que determinan el valor que tomarán las variables de usuario en caso de que se ejecute la rega. Del mismo modo que el campo Condition, puede emplear las variables especificadas en el punto 3.2.
 	\end{itemize}
 \end{itemize}
 
@@ -109,7 +114,7 @@ Y en el caso de las reglas:
 	\item \textbf{check\_double\_rule\_id}: comprueba que en la lista de reglas definida no hay 2 reglas con el mismo id.
 	\item \textbf{check\_action}: comprueba la correcta especificación de la expresión del campo Action, para ello comprueba que, si hay varias expresiones, estas están correctamente separadas por ``;'' y que cada una de las expresiones tiene la forma: <variable de usuario> = <expresión>.
 	\item \textbf{verify\_rules}: comprueba que las reglas contienen todos los atributos necesarios (id, Action y Condition), y que estos son correctos llamando a las 2 funciones anteriores. 
-	\item \textbf{transform\_rule}: modifica las expresiones Action y Condition de las reglas, ya que aunque en estas las variables \textbf{n\_X} (explicadas en 3.1) se especifican como \textbf{n\_A}, \textbf{n\_B}, etc; en C++ los genotipos se definen con números y no con letras, por tanto esta función transforma \textbf{n\_A}, \textbf{n\_B}... en \textbf{n\_1}, \textbf{n\_2}... 
+	\item \textbf{transform\_rule}: modifica las expresiones Action y Condition de las reglas, ya que aunque en estas las variables \textbf{n\_X} (explicadas en 3.2) se especifican como \textbf{n\_A}, \textbf{n\_B}, etc; en C++ los genotipos se definen con números y no con letras, por tanto esta función transforma \textbf{n\_A}, \textbf{n\_B}... en \textbf{n\_1}, \textbf{n\_2}... 
 	\item \textbf{adapt\_rules\_to\_cpp}: mediante llamadas a la función anterior, modifica las expresiones action y condition de las distintas reglas definidas en la lista para adaptarlas a C++.
 	\item \textbf{createRules}: mediante llamadas a \textbf{verify\_rules} y a \textbf{adapt\_rules\_to\_cpp} comprueba que las reglas definidas son correctas y las adapta a C++ devolviendo la lista de reglas ya transformada.
 \end{itemize}
@@ -194,34 +199,109 @@ bool isValid(std::string equation);
 \end{CPP}
 \end{itemize}
 
-
+Por último definimos las funciones que  implementan la funcionalidad principal del TAD, estas son \textbf{executeRules} y \textbf{parseAction} que, en conjunto, permiten la actualización de los valores de las variables de usuario siguiendo lo especificado en las reglas.
 \begin{itemize}
-	\item estructuras Rule y UserVarsInfo
-	\item funciones de user\_var.cpp:
+	\item \textbf{executeRules}:
+	\begin{CPP}
+	void executeRules (UserVarsInfo& uvif,
+	                    double &currentTime,
+	                    const std::map<std::string, double> birthMap,
+	                    const std::map<std::string, double> deathMap,
+	                    const std::map<std::string, double> mutationMap);
+	\end{CPP}
+Esta es la función principal que implementa el algoritmo de actualización de las variables de usuario explicado en el apartado 3.2. Para ello hace uso de la librería exprtk para parsear la expresión boodleana contenida en el campo \textbf{Condition} para determinar si una regla debe ejecutarse o no, y, en caso afirmativo llama  la segunda función mencionada \textbf{parseAction} para ejecutar la modificación de las variables pertinentes.
+Los parámetros que recibe esta función son:
 	\begin{itemize}
-		\item Básicas (createRule, createUserVarsInfo, destroyRule, compareRules, addRule, printRule, printUserVarsInfo)
-		\item isValid (Comprueba si las expresiones de las acciones de las reglas están bien formadas)
-		\item executeRules (Comprueba si se cumple la condición mediante exprtk, y si se cumple llama a parseAction)
-		\item parseAction ("compila" la acción de la regla con exprtk y la ejecuta variando las variables de usuario necesarias en el map de UserVarsInfo)
+		\item \textbf{uvif}: estructura UserVarsInfo (explicada al inicio de este punto) que contiene el listado de variables de usuario y reglas definidas para la simulación en ejecución. Se emplea para acceder a las reglas y variables de usuario, así como para añadir las variables de usuario a la tabla de símbolos de la librería exprtk para poder emplearlas en el parseo de las expresiones contenidas en las reglas. Contiene además también el campo \textbf{mapGenoToPop} con las poblaciones asociadas a cada genotipo, que se deben añadir también a la tabla de símbolos (corresponden a las variables \textbf{n\_x}) y son necesarias para calcular la población total \textbf{N}.
+		\item \textbf{currentTime}: tiempo actual de la simulación en el ciclo en que se está  ejecutando la función. Se emplea para añadirlo como variable a la tabla de símbolos de exprtk para emplearse en el parseo de expresiónes. Corresponde a la variable \textbf{T} explicada en el punto 3.2.
+		\item \textbf{birthMap}, \textbf{deathMap} y \textbf{mutationMap}: mapas que contiene las tasas de nacimiento, muerte y mutación de todos los genotipos presentes en el momento actual de la simulación. Se añaden como variables a la tabla de símbolos de exprtk. Corresponden a las variables \textbf{birthRate}, \textbf{deathRate} y \textbf{mutationrate} respectivamente explicadas en el punto 3.2.
 	\end{itemize}
+Conociendo estos datos, la función opera de la siguiente manera:
+	\begin{algorithm}
+		\caption{executeRules}
+		\begin{algorithmic}
+			\STATE Rellenamos la tabla de símbolos de exprtk con las variables mencionadas en el apartado 3.2 para que la librería pueda operar con ellas al parsear la \textbf{Condition}.
+			\FOR{regla \textbf{in} uvif.rules}
+				\STATE Parseamos \textbf{regla.Condition} con exprtk obteniendo \textbf{true/false}
+				\IF{regla.Condition == true}
+					\STATE Llamamos a \textbf{parseAction}
+				\ENDIF
+			\ENDFOR
+		\end{algorithmic}
+	\end{algorithm}
+	
+	\item \textbf{parseAction}:
+	
+	\begin{CPP}
+	void parseAction(UserVarsInfo& uvif, 
+	                    Rule rule,  
+	                    double currentTime,
+	                    const std::map<std::string, double> birthMap,
+	                    const std::map<std::string, double> deathMap,
+	                    const std::map<std::string, double> mutationMap);
+	\end{CPP}
+	
+	Esta función se encarga de parsear el campo \textbf{Action} de la regla mediante exprtk y modificar el listado de variables de usuario definidas según lo indicado en este campo. 
+	En este caso los parámetros que recibe son muy similares a los de la función anterior \textbf{executeRules}, pero añadiendo \textbf{rule}, que contiene la regla concreta que se va a ejecutar.
+	Esta segunda función tiene la siguiente estructura:
+	
+	\begin{algorithm}
+		\caption{executeRules}
+		\begin{algorithmic}
+			\STATE Rellenamos la tabla de símbolos de exprtk con las variables mencionadas en el apartado 3.2 para que la librería pueda operar con ellas al parsear la \textbf{Action}.
+			\STATE Dividimos la string \textbf{rule.action} en \textbf{tokens} separados por ``;'' (cada token define la actualización de una variable)
+			\FOR{\textbf{each} token}
+				\STATE Separamos la string que define la asignación por el ``='' obteniendo el \textbf{nombreVariable} y la \textbf{expresión}
+				\STATE Parseamos la \textbf{expresión} con exprtk obteniendo el \textbf{valor} numérico al que equivale
+				\STATE uvif.userVars[\textbf{nombreVariable}] = \textbf{valor}
+			\ENDFOR
+		\end{algorithmic}
+	\end{algorithm}
 \end{itemize}
 
 \section{Integración en el flujo principal de código}
 
-\begin{itemize}
-	\item Se incluye la ejecución de las reglas en el flujo de código de la simulación en la función nr\_innerBNB de BNB\_nr.cpp justo antes de la ejecución de las intervenciones para permitir que las variables de usuario estén actualizadas antes de realizar las intervenciones ya que se emplean para estas.
-	\item Se crea la función evalFVarsFitness que permite acceder al birthrate, deathrate y mutationrate que se deben pasar como argumentos  para executeRules para poder añadirse a la tabla de símbolos de exprtk y poder emplearse en las fórmulas para las codiciones o modificaciones de las reglas para actualizar las variables de usuario.
-	\item Empleamos tambien la función evalFVars para acceder a las poblaciones de los genotipos con la misma finalidad.
-	\item Modificamos la estructura de salida de la función BNB\_nr\_Algo5 para que incluya la lista con los nombres de las variables de usuario y la matriz con los valores de estas en cada sampleEvery
-	\item Modificamos las cabeceras y llamadas a funciones para que incluyan las nuevas variables userVars, Rules y userVarsInfo, y se realicen las llamadas de forma adecuada.
-	\item Modificación de los parametros de entrada de todas las funciones de OncoSimulR para que tomen de forma adecuada el parámetro de intervenciones, así como actualización de RcppExports.R, RcppExports.cpp y OncoSimulR\_init.c con el mismo fin.
-\end{itemize}
+Una vez definidas la funcionalidad de las variables de usuario y las reglas en el TAD anteriormente explicado, se procede a la integración de esta en el flujo principal de cósigo de la simulación tumoral. Para ello se han incluido fragmentos de código que ejecutan las funciones de actualización de las variables de usuario dentro de la función \textbf{nr\_innerBNB} del fichero \textbf{BNB\_nr.cpp}, que es la que implementa el algoritmo BNB de Mahler explicado en el punto 2 (TODO).
 
-\section{Inclusión de las variables en las intervenciones}
+La actualización de las variables de usuario se incluye dentro de esta función, de manera que se ejecute una vez por cada ciclo de muestreo de la simulación. Con el fin de poder simular la terapia adaptativa, es necesario poder emplear estas variables de usuario calculadas en la ejecución de las intervenciones, por tanto, esta actualización debe realizarse antes de que estas se ejecuten en cada ciclo. Finalmente se ha decidido realizar la actualización justo en el punto entre la actualización de las poblaciones de los genotipos según las tasas de nacimiento, muerte y mutación, y la ejecución de las intervenciones; de este modo las variables de usuario se actualizan de acuerdo a los datos temporalmente más cercanos posibles a la ejecución de las intervneciones, que es, por el momento, la principal funcionalidad para la que se van a emplear estas variables.
 
-\begin{itemize}
-	\item Modificamos executeInterventions para que reciba como argumento la estructura userVarsInfo con los datos de las variables de usuario y añadimos un pequeño fragmento que añade las variables de usuario y sus valores a la tabla de símbolos de exprtk para poder ser empleadas en las imtervenciones.
-	\item Realizamos el mismo proceso para ParseWhatHappens.
+Se valoró la posibilidad de recalcular de nuevo las variables de usuario  despues de la ejecución de las intervenciones, pues estas pueden variar ciertos datos tales como la población, que afectarían al valor de estas variables. Sin embargo, esta opción se terminó descartando puesto que, al modificar las variables 2 veces por ciclo, se estaría aumentando notablemente el coste computacional del algoritmo, proporcionando además una infomación que, si bien es más precisa, no genera un beneficio suficientemente significativo como para justificar el coste.
+
+Para realizar la actualización de las variables en el algoritmo de simulación principal mencionado, añadimos a este el siguiente fragmento de código:
+\begin{CPP}
+      std::map<std::string, double> birthMap = evalFVarsFitness(fitnessEffects, Genotypes, popParams, "birth");
+      std::map<std::string, double> deathMap = evalFVarsFitness(fitnessEffects, Genotypes, popParams, "death");
+      std::map<std::string, double> mutationMap = evalFVarsFitness(fitnessEffects, Genotypes, popParams, "mutation");
+      if(rules_length > 0 && userVars_length > 0){
+        uvif.mapGenoToPop = evalFVars(fitnessEffects, Genotypes, popParams, true);
+        executeRules(uvif, currentTime, birthMap, deathMap, mutationMap);
+        auxValues = {};
+        for (auto &item : uvif.userVars){
+          auxValues.push_back(item.second);
+        }
+        auxValues.push_back(currentTime);
+        userVarValues.push_back(auxValues);
+      } 
+\end{CPP}
+
+En este fragmento cabe destacar la creación y uso de la función \textbf{evalFVarsFitness} que permite acceder a las tasas de nacimiento, muerte y mutación de los distintos genotipos presentesen este mometno de la simulación; que se deben pasar como parámetros a \textbf{executeRules} para poder añadirse a la tabla de símbolos de exprtk.
+Vemos que de forma similar se emplea también la función \textbf{evalFVars}, que ya existía con anterioridad, para obtener los valores de las poblaciones de los distintos genotipos, valores que también se deben pasar como parámetro a \textbf{executeRules}.
+Una vez obtenidos todos estos valores necesarios, se procede a la llamada a \textbf{executeRules} para actualizar las variables, almacenando los valores de las variables resultantes en vectores auxiliares para posteriormente poder devolverlos a la salida.\\
+\indent Además de estas adiciones al algoritmo, se ha modificado también su estructura de salida para que incluya una lista con los nombres de las variables de usuario creadas durante la simulación, y una matriz con los valores que toman las variables en cada unidad de tiempo de la simulación (cada fila es una lista con los valores de las distintas variables para una unidad de tiempo, en el mismo orden en que aparecen en la lista con los nombres de las variables), esta matriz se rellena con los valores que se han ido almacenando en el vector auxiliar mencionado anteriormente.\\
+\indent Por último, para finalizar esta integración en el flujo principal de código, se han modificado los parámetros de entrada de todas las funciones en R de OncoSimulR para que reciban de forma adecuada los parámetros \textbf{userVars} y \textbf{rules}, y se han actualizado los ficheros RcppExports.R, RcppExports.cpp y OncoSimulR\_init.c, para que estos mismos parámetros se pasen a C++ de forma adecuada.
+
+\section{Variables de usuario en las intervenciones. Terapia adaptativa}
+
+Como hemos visto en la sección 3.1, la finalidad principal dela cración de las variables de usuario es lograr la simulación de la terapia adaptativa. Para ello, ahora que contamos con la funcionalidad completa de las variables de usuario, se debe lograr que estas puedan emplearse para definir las expresiones que determinan las acciones a realizar en una intervención.
+
+Por tanto, se ha incluido estas variables en la funcionalidad de las intervenciones. Para ello se han modificado las funciones \textbf{executeInterventions} y \textbf{parseWhatHappens} del fichero \textbf{interventions.cpp}, que controlan la ejecución de las intervenciones en la simulación.
+Ambas funciones reciben unas modificaciones muy similares que consisten en:
+\begin{enumerate}
+	\item Modificamos ambas funciones para que para que reciban como argumento la estructura userVarsInfo con los datos de las variables de usuario.
+	\item Añadimos en ambas un pequeño fragmento de código para introducir las variables de usuario y sus valores a la tabla de símbolos de exprtk permitiendo así que se puedan emplear en el parseo de expresiones de las intervenciones.
 	\item Modificamos las cabeceras y llamadas a estas 2 funciones de forma adecuada para que incluyan userVarsInfo en todas las llamadas. 
-\end{itemize}
+\end{enumerate}
+
+Con estos cambios se finaliza el desarrollo de la funcionalidad y se procede a las pruebas para comprobar su correcto funcionamiento.
+
 

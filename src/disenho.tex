@@ -1,5 +1,15 @@
 \chapter{Diseño\label{sec:disenho}}
 
+\section{Introducción. Terapia adaptativa y variables de usuario}
+
+Como hemos visto en la sección 1.1 (TODO), la base fundamental de la terapia adaptativa es la posibilidad de crear tratamientos específicos para determinados momentos en el desarrollo de un tumor. Dentro del programa \textbf{OncoSimulR} los tratamientos están simulados a traves de las \textbf{intervenciones}. Por tanto, para simular la terapia adaptativa debemos lograr que estas intervenciones puedan depender del  estado de desarrollo del tumor, es decir, del estado de la simulación en el momento concreto en que se va a ejecutar la intervención.
+
+Para ello se ha decidido añadir al programa la posibilidad de definiri variables de usuario, es decir, se ha incluido la posibilidad de que el usuario defina una serie de variables cuyo valor sea una función arbitrariamente compleja de distintos parámetros de la simulación. A lo largo de la simulación tumoral, estas variables se irán actualizando de acuardo a la fórmula introducida por el usuario, haciendo que los valores vayan variando en función de la evolución del tumor. 
+
+Estas variables podrán luego ser empleadas para elaborar las expresiones que definen la acción a realizar en una intervención (como se ha visto en el punto 2 TODO), permitiendo así condicionar el efecto de una intervención al estado del tumor en el momento de la ejecución de esta, es decir, permitiendo la terapia adaptativa.
+
+Con esto en mente procedemos al diseño de estas variables de usuario.
+
 \section{Definición de variables y reglas}
 A la hora de plantearse el diseño necesario para esta funcionalidad, lo primero que necesitamos saber es qué son y como se definen las variables de usuario que vamos a implementar.
 
@@ -66,8 +76,9 @@ Para obtener los datos de evolución de las variables de usuario definidas en el
 \begin{itemize}
 	\item Una lista con los nombres (``ids'') de las variables de usuario creadas.
 	\item Una matriz con los valores de las variables de usuario en cada unidad de tiempo muestreada (en el mismo orden que los nombres de las variables en en la lista de nombres de las variables de usuario).	
+\end{itemize}
 
 La finalidad de añadir estos datos a la salida de la simulación es poder emplear las variables de usuario (que son arbitrariamente complejas) como datos de salida y no solo como valores a emplear en otros procesos como las intervenciones. Por ejemplo, obtener estos datos permite al usuario graficar la evolución en el tiempo de algunas variables de usuario creadas, lo que puede ser de gran interés para evaluar la evolución del tumor en la simulación. Además, la adición de estos datos en la salida facilitará enormemente las labores de testeo de la funcionalidad implementada.	
-\end{itemize}
+
 
 
