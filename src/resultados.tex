@@ -2,59 +2,49 @@
 
 \section{Comprobación de funcionalidad previa}
 
+Antes de proceder a introducir toda la nueva funcinalidad explicada a partir del punto 4.4, y tras realizar la unificación de las 2 ramas de las que se partía y la solución de los problemas de optimización explicados en 4.3 ,aseguramos que la funcionalidad anterior no se ha visto afectada mediante el uso de la batería de tests ya disponibles para el programa \textbf{OncoSimulR}. Esta batería de tests incluye por una lado unos tests manuales muy extensos y costosos computacionalmente, y otro grupo de tests que comprueban la funcionalidad básica del programa mediante el paquete \textbf{testthat} del lenguaje R. Al realizar esto se detectaron una serie de errores previos al merge en una de las ramas. Los errores detectados están localizados en los tests de la funcionalidad de intervenciones, y son errores en los propios tests y no fallos de funcionalidad. Para solucionar estos errores:
+
 \begin{itemize}
-	\item Comprobamos que la funcionalidad previa no se ha perdido ejecutando la batería de tests ya existentes para todo oncoSimulR con la herramienta testthat y tambien los manuales.
+		\item Se modifica la salida del algoritmo de simulación BNB implementado en la función \textbf{nr\_BNB\_Algo5} para que incluya una lista con los tiempos de la simulación en los que se ejecutan intervenciones (esto nos permite buscar los puntos exactos donde se realizan las intervenciones en los tests). De este modo la salida de la función principal de simulación \textbf{OncoSimulIndiv} ahora incluye el campo \textbf{x\$other\$interventionTimes} con estos tiempos (donde ``x'' es la variable donde se almacena la salida de la función).
+		\item Adelantamos el punto de ejecución de las intervenciones en flujo principal del código de la simulación realicen antes de rellenar las estructuras de salida. Con esto conseguimos que al actualizarse las poblaciones y tasas de nacimiento y muerte al final de cada ciclo de simulación, estas incluyan los cambios realizados por las intervenciones; antes de esta modificación, los cambios que realizaban las intervenciones no se veían reflejados en las poblaciones mostradas a la salida hasta el tiempo correspondiente a la siguiente iteración de la simulación, lo que generaba un desfase entre lo que se testeaba (que emplea los datos de salida) y las poblacioes internas empleadas en la simulación (que sí incluían los cambios realizados por las intervenciones).
+		\item Comentar la comprobación de totPopSize != totalPop en reduceTotalPopulation (interventions.cpp) porque al haberlo adelantado totPopSize no está actualizado.
+		\item Añadimos un fragmento de código para eliminar los genotipos con población 0 despues de realizar intervenciones. Esto estaba generando un error pues algunas operaciones de la simulación no se pueden realizar con poblaciones 0. 
+		\item Modificamos los tests ya existentes de intervenciones para adaptarlos a estos nuevos cambios y comprobamos que todos los tests se pasan correctamente. Estas modificaciones consisten principalmente en hacer que se empleen los tiempos almacenados en \textbf{x\$other\$interventionTimes} para buscar los puntos en los que se realizan intervenciones y comprobar que estas son correctas, en lugar de buscarlas recorriendo la estructura de salida con las poblaciones en cada unidad de tiempo, pues este método no permitía un testeo correcto además de ser mucho menos eficiente.
 \end{itemize}
 
+Por último, tras implementar toda la nueva funcionalidad (explicada a partir del punto 4.4) volvemos a ejecutar toda la batería de tests  para asegurar, de nuevo, que estos cambios no han afectado al correcto funcionamiento de la funcionalidad previa.
 
+\section{Tests de nueva funcionalidad}
+
+Para probar el correcto funcionamiento de la nueva funcionalidad implementada que incluye la creación de variables de usuario y su actualización, así como la simulación de la terapia adaptativa mediante la inclusión de estas variables en las intervenciones; se ha ampliado la batería de tests del programa (concretamente los tests que emplean la herramienta \textbf{textthat} incluyendo un nuevo documento de tests \textbf{test.user\_var.R} que prueba la funcionalidad de las variables de usuario, y se ha ampliado el documento de tests \textbf{test.intervention.R} que incluye los tests sobre intervenciones, para añadir los casos en que estas dependen de los valores contenidos en variables de usuario. Ambos ficheros están incluidos en el directorio \textbf{tests/testthat}.
+
+\subsection{Variables de usuario}
+
+Como hemos comentado los tests que comprueban el correcto funcionamiento de las variables de usuario están contenidos en el fichero \textbf{test.user\_var.R}, estos tests contienen las siguientes comprobaciones.
 \begin{itemize}
-	\item Tras realizar el merge entres las ramas anteriores se detectaron una serie de fallos de la funcionalidad previa en los tests que fue necesario solucionar para proceder a la implementación de la nueva funcionalidad. Estos fallos estaban localizados en los tests de la funcionalidad de intervenciones que se ha eplicado anteriormente (o bien en estado del arte o en la sección de unificación de ramas).
-	\item Para solucionar los fallos:
-	\begin{itemize}
-		\item Añadir InterventionTimes a x\$other\$interventionTimes con los tiempos de las intervenciones para poder realizar tests (se rellena en BNB\_nr.cpp tras haber cambiado executeInterventions)
-		\item Adelantar la ejecución de intervenciones para que se realice antes de rellenar las estructuras de salida para evitar que las actualizaciones de poblacion de las intervenciones se realicen 1 samboleEvery despues de lo debido y para que la tabla de poblaciones y la de birth y death rates estén correctamente actualizadas y sincronizadas entre sí
-		\item Comentar la comprobación de totPopSize != totalPop en reduceTotalPopulation (interventions.cpp) porque al haberlo adelantado totPopSize no está actualizado
-		\item Añadir código para eliminar los genotipos con 0 población despues de realizar intervenciones para evitar el error que se obtenía: Unrecoverable exception: ti: popSize <= 0. spP.popSize = 0.000000. Aborting.
-		\item Adaptar los tests de intervenciones a estos nuevos cambios y comprobar que todos los tests se pasan correctamente
-	\end{itemize}
-	\item Tras esto ademas realizamos algunos cambios en el código pues durante estas modificaciones se vió que en numerosas ocasiones se ejecutaban fragmentos de código innecesarios, que en una ejecución de una simulación de gran tamaño suponían un gran aumento del tiempo de ejecución, para ello:
-	\begin{itemize}
-		\item Modificamos la funcion ExecuteInterventions de interventions.cpp:
-		\begin{itemize}
-			\item Hacer que devuelva true si hay intervencion y false si no y en caso de error solo lance excepción (esto permite el siguiente punto y permite obtener InterventionTimes desde fuera)
-			\item Hacer que solo se llame a UpdatePopulations si ha habido intervención (antes se ejecutaba en todas las iteraciones aunque no hubiese intervenciones)
-		\end{itemize}
-		\item Cambiar ParseWhatHappens, ahora devuelve void y si hay error solo lanza excepción
-	\end{itemize}
+	\item Las variables de usuario se crean correctamente
+	\item 2 variables no pueden tener el mismo nombre
+	\item Las reglas para la actualización de las variables se crean correctamente
+	\item 2 reglas no pueden tener el mismo ID
+	\item Al ejecutarse las reglas, las variables de usuario se modifican de forma correcta (en función de la variable T)
+	\item Al ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de la variable N)
+	\item Al ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de las poblaciones por genotipo n\_x)
+	\item Al ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de la otras variables de usuario)
 \end{itemize}
 
-¿Optimización?
+\subsection{Intervenciones con variables de usuario}
 
-\section{Tests de variables de usuario}
-
+Una vez hemos comprobado que las variables de usuario funcionan de forma adecuada, ampliamos los tests del fichero \textbf{test.intervention.R} para asegurar que las intervenciones funcionan de forma correcta cuando depende de las variables de usuario creadas. Para ello añadimos 2 nuevos tests en este fichero para comprobar:
 \begin{itemize}
-	\item Creamos el fichero de tests para testthat test.user\_var.R que contiene 8 tests para probar el correcto funcionamiento de las variables de usuario
-	\begin{itemize}
-		\item Probar que las variables se crean correctamente
-		\item Comprobar que 2 variables no pueden tener el mismo nombre
-		\item Comprobar que las reglas se crean correctamente
-		\item Comprobar que 2 reglas no pueden tener el mismo ID
-		\item Comprobar que la ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de la variable T)
-		\item Comprobar que la ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de la variable N)
-		\item Comprobar que la ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de las poblaciones por genotipo n\_x)
-		\item Comprobar que la ejecutarse las reglas las variables de usuario se modifican de forma correcta (en función de la otras variables de usuario)
-	\end{itemize}
-\end{itemize}
-
-\section{Tests de intervenciones}
-
-\begin{itemize}
-	\item Modificamos el fichero de tests de intervenciones test-interventions.R para incluir dos tests que compruebe que las intervenciones se ejecutan de forma adecuada cuando el trigger depende de variables de usuario y cuando la función de modificación emplea variables de usuario.
+	\item Las intervenciones se ejecutan de forma correcta cuando el \textbf{Trigger} (condición de ejecución de la intervención) depende de variables de usuario.
+	\item Las intervenciones se ejecutan de forma correcta cuando el \textbf{WhatHappens} (modificación en poblaciones o tasas realizada por la intervención) depende de variables de usuario.
 \end{itemize}
 
 \section{Resultados}
 
-\begin{itemize}
-	\item ¿Optmización?
-	\item ¿?
-\end{itemize}
+Tras todo el trabajo realizado, en esta sección vamos a comprobar que, efectivamente, los resultados obtenidos cumplen con lo esperado e, incluso, se han logrado resultados positivos que no se habían planteado incialmente como objetivos del trabajo.
+
+\subsection{Terapia Adaptativa}
+Como se ha comentado a lo largo del documento, el principal objetivo de todas las modificaciones implementadas es lograr la simulación de la terapia adaptativa, explicada en detalle en el punto 2 (TODO). 
+\subsection{Variables de usuario como datos de interés a la salida}
+\subsection{Optimización en la ejecución de intervenciones}
