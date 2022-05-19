@@ -10,7 +10,7 @@ Este paquete está escrito en los lenguajes R y C++, logrando una interfaz amiga
 \begin{itemize}
 	\item Especificar la adaptabilidad de los genes mediante el ``fitness'' y las tasas de nacimiento y muerte con la función \textbf{allFitnessEffects}, en esta función se permite:
 	\begin{itemize}
-		\item Especificar el fitness de cada genotipo de forma explícita siguiendo los modelos de Bozic (tasa de muerte fija y el fitness define el nacimiento) o de McFarland (tasa de nadiciemto fija y el fitness determina la muerte).
+		\item Especificar el fitness de cada genotipo de forma explícita siguiendo los modelos de \textbf{Bozic} (tasa de muerte fija y el fitness define el nacimiento) o de \textbf{McFarland} (tasa de nadiciemto fija y el fitness determina la muerte).
 		\item Definir un fitness variable para los genotipos  en función de la frecuencia de estos, es decir, según la cantidad de población (frecuencia absoluta), o la proporción frecuencia relativa) de cada genotipo que haya presente en el conjunto de células simulado.
 		\item Asignar de forma explícita de tanto tasa de nacimiento como tasa de muerte, sin seguir por tanto los modelos de Bozic y McFarland (En una de las ramas con funcionalidad más avanzada que la principal, explicada en 2.2.1)
 		\item Determinar la existencia o no de epistasia entre los genes, es decir, si la presencia de un determinado gen mutado favorece a otro, de este modo, el fitness de una célula con un determinado gen mutado aumentará si muta otro gen con el que tiene epistasia.
@@ -26,10 +26,46 @@ Toda esta funcionalidad permite una gran adaptabilidad al programa, haciéndolo 
  
 \section{Algoritmo BNB de Mather et al}
 
-Como hemos comentado en el apartado anterior, \textbf{OncoSimulR} emplea el algoritmo \textbf{BNB de Mather et al} para la simulación de la progresión tumoral. Este es un algoritmo de simulación basado en el uso de distribuciones binomiales y binomiales negativas para la actualización de las poblaciones.
-TODO: Explicación del algoritmo BNB
+Como hemos comentado en el apartado anterior, \textbf{OncoSimulR} emplea el algoritmo \textbf{BNB de Mather et al} para la simulación de la progresión tumoral. Este es un algoritmo de simulación basado en el uso de distribuciones binomiales y binomiales negativas para la actualización de las poblaciones. El algoritmo actúa de acuerdo a los siguientes pasos:
+\begin{enumerate}
+	\item Inicializamos un número $N$ de clases (en nuestro caso genotipos) en el tiempo inicial de la simulación $t = 0$. Para cada genotipo definimos una población incial $n_i$ con $i = 1, ..., N$ y unas tasas de nacimiento, mutación y muerte ($gi$, $\gamma i$ y $\mu i$ respectivamente.
+	\item Para cada clase (genotipo) generamos $N$ números aleatorios $r_i$ entre 0 y 1 siguiendo una distribución uniforme.
+	\item Para cada $i = 1, ..., N$ se calcula un tiempo $t_i$, que representa el tiempo hasta la siguiente mutación. Este tiempo se calucla con la ecuación: 
+$$t_i = \frac{1}{R} \ln\left[\frac{r_i^\frac{1}{n_0}(R-W+2g)-W-R+2\gamma}{r_i^\frac{1}{n_0}(-R-W+2g)-W+R+2\gamma}\right]$$ 
+Dónde $R$ y $W$ son:
+$$R = \sqrt{(g-\gamma)^2 + (2g-2\gamma + \mu) \mu}$$ $$W = g + \gamma + \mu$$
+Esta ecuación solo tiene solución cuando se cumple que:
+$$\left(\frac{R-W+2\gamma}{R+W-2g}\right)^{n_0} < r_i \leq 1$$
+En caso contrario, quiere decir que la población se extinguirá antes de la siguiente mutación, y, por tanto, $t_i = \infty$.
+	\item Se busca el menor tiempo de mutación $t_m = min(t_i)$, y la clase $i_m$ a la que corresponde y se actualiza el tiempo de simulación $t = t+t_m$.
+	\item Se actualiza la población del genotipo $i_m$ empleando 2 números aleatorios (uno binomial y otro binomial negativo), del siguiente modo:
+	\begin{enumerate}
+		\item Generamos un número aleatorio binomial $\tilde{m}$ con probabilidad de éxito $1-\left(\frac{p_E(t)}{p_M(t)}\right)$ y con $n_{i_m} - 1$ términos.
+		\item Calculamos la población resultamte de la clase (genotipo) que ha mutado $n_{i_m} = \tilde{n}$ siguiendo la ecuación:
+$$n_{i_m} = \tilde{n} = \tilde{m} + 1 + \widetilde{NB}(\tilde{m}+2, p_B(t))$$
+Dónde $\widetilde{NB}(a,b)$ representa una binomial negativa de orden $a$ y probabilidad de éxito $b$.
+	\end{enumerate}
+	\item Se actualizan las poblaciones del resto de genotipos, para ello, para cada clase $i \neq i_m$ con $i, \in \{1, ..., N\}$:
+	\begin{enumerate}
+		\item Generamos otro número aleatorio $\tilde{m}$ siguiendo una distribución binomial, con probabilidad de éxito $1-\left(\frac{p_E(t)}{p_M(t)}\right)$ y $n_i$ términos.
+		\item Si $\tilde{m} = 0$ entonces la clase se ha extinguido y la nueva población $n_i = \tilde{n} = 0$.
+		\item En caso contrario, la nueva población es:
+$$n_i = \tilde{n} = \tilde{m}+\widetilde{NB}(\tilde{m}, p_B(t))$$
+Dónde, al igual que antes, $\widetilde{NB}(a,b)$ representa una binomial negativa de orden $a$ y probabilidad de éxito $b$.
+	\end{enumerate}
+	\item Seleccionamos la mutación concreta que se ejecuta. Si esta genera un genotipo que no existe todavía, se crea una clase nueva para este genotipo $N+1$ con una población $n_{N+1} = 1$ y se establecen sus parámetros $g_{N+1}$, $\gamma_{N+a}$ y $\mu_{N+1}$. Si no, se suma uno a la población del genotipo que surge de la mutación.
+	\item Se eliminan las clases correspondientes a los genotipos cuyas poblaciones sean 0 tras las variaciones.
+	\item Se vuelve a 2 hasta que se cumpla la condición de parada.
+\end{enumerate}
+
+La condición de parada puede definirse de diversos modos, con una población máxima o mínima, con un tiempo máximo o con una mutación específica. En el caso de \textbf{OncoSimulR}, la condición de parada empleada es un tiempo final.
+
 \section{Ramas con versiones divergentes}
-TODO: Comentario sobre varias ramas y la necesaidad de unificarlas
+
+Además de la funcionalidad básica de simulación que proporciona el algoritmo \textbf{BNB de Mather et Al} explicado, \textbf{OncoSimulR} permite simulaciones más complejas mediante la adición de otra funcionalidad a este algoritmo. Algunos ejemplos de esto son la gran libertad para la definición de las tasas de nacimiento y muerte, o la posibilidad de simular el resultado de ciertos tratamientos, como se ha mencionado brevemente con anterioridad.
+
+Estas funcionalidades, al ser muy recientes y haberse desarrollada simultáneamente, se encuentran, al inicio de este trabajo, en dods ramas diferentes del programa, cada una implementando una de las dos funcionalidades, que deben ser unificadas para proseguir con la nueva funcionalidad, pues se basa en parte en funcionalidad implementada en estas.
+Procederemos ahora a explicar brevemente las peculiaridades y funcionalidad concreta de estas dos ramas.
 \subsection{Birth y death rate}
 TODO: Explicación rama Alberto
 \subsection{Intervenciones}
