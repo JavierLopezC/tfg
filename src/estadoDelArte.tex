@@ -64,12 +64,82 @@ La condición de parada puede definirse de diversos modos, con una población m�
 
 Además de la funcionalidad básica de simulación que proporciona el algoritmo \textbf{BNB de Mather et Al} explicado, \textbf{OncoSimulR} permite simulaciones más complejas mediante la adición de otra funcionalidad a este algoritmo. Algunos ejemplos de esto son la gran libertad para la definición de las tasas de nacimiento y muerte, o la posibilidad de simular el resultado de ciertos tratamientos, como se ha mencionado brevemente con anterioridad.
 
-Estas funcionalidades, al ser muy recientes y haberse desarrollada simultáneamente, se encuentran, al inicio de este trabajo, en dods ramas diferentes del programa, cada una implementando una de las dos funcionalidades, que deben ser unificadas para proseguir con la nueva funcionalidad, pues se basa en parte en funcionalidad implementada en estas.
+Estas funcionalidades, al ser muy recientes y haberse desarrollada simultáneamente, se encuentran, al inicio de este trabajo, en dos ramas diferentes del programa, cada una implementando una de las dos funcionalidades, que deben ser unificadas para proseguir con la nueva funcionalidad, pues se basa en parte en funcionalidad implementada en estas.
 Procederemos ahora a explicar brevemente las peculiaridades y funcionalidad concreta de estas dos ramas.
+
 \subsection{Birth y death rate}
-TODO: Explicación rama Alberto
+En esta rama se implementa la funcionalidad que permite definir de forma manual y arbitraria las tasas de nacimiento y muerte. La funcionalidad anterior a esta rama tan solo permitía la definición de un único parámetro ``fitness'', que representaba la tasa de nacimiento (en el modelo de \textbf{Bozic}) o la de muerte (en el de \textbf{McFarland}), pero no se podían definir ambos de forma manual al mismo tiempo.
+Para incluir esto, esta rama contiene numerosos cambios en funciones básicas del algoritmo de simulación, que incluyen:
+\begin{itemize}
+	\item \textbf{allFitnesEffects}: esta función es la que permite al usuario definir el fitness de los genotipos, por tanto, en esta rama, contiene cambios que permiten definir no solo un parámetro para cada genotipo (que antes era el fitness), sino dos, correspondientes a las tasas de nacimiento y muerte respectivamente.
+	\item \textbf{evalAllGenotypes}: esta función se emplea para obtener los valores del fitness de todos los genotipos, por tanto en esta rama, implementa cambios para devolver dos valores para cada genotipo (correspondientes a las tasas de nacimiento y muerte) en lugar de uno solo, como previamente. Para ello incuye cambios además en otras funciones internas que gestionan el almacenamiento de los datos en las estructuras de C++.
+	\item \textbf{OncoSimulIndiv}: la función principal de simulación se ve también afectada, pues debe permitir la simulación mediante un modelo distinto a los de \textbf{Bozic} y \textbf{McFarland} que ya se permitían, pues estos no necesitan definir ambas tasas. Por tanto se modifica esta función para introducir un nuevo modelo de simulación \textbf{Arb} (arbitrario) que permite introducir ambos valores.
+\end{itemize}
+Además, la rama incluye también modificaciones en numerosas estructuras en C++, especialmente en
+\begin{itemize}
+	\item \textbf{fitnessLandscape\_struct}: estructura que mapea los genotipos a su fitness, o, en esta rama, tanto a su tasa de nacimiento como de muerte.
+	\item \textbf{fitnessEffectsAll}: estructura que contiene todos los datos para manejo del fitness, ahora debe incluir datos tanto para la tasa de nacimiento como de muerte.
+	\item \textbf{spParamsP}: clase que almacena los datos de cada genotipo, tasa de mutación, fitness, población, etc. En esta rama en lugar del fitness incuye datos sobre la tasa de nacimiento y de muerte.
+\end{itemize}
+Al modificarse estas estructuras, se introducen también ligeros cambios en todas las funciones que las emplean, que deben también tenerse en cuenta.
+
 \subsection{Intervenciones}
-TODO: Explicación más extensa rama Javier
+La funcionalidad correspondiente a la simulación de tratamientos mediante lo que en la aplicación \textbf{OncoSimulR} se llaman ``intervenciones'' está implementada en otra rama separada. En ella se permite definir ciertos cambios en la población o el fitness de uno o varios genotipos, que se llevarán a cambo cuando se cumpla una determinada condición o ``trigger''. De este modo se puede emular el efecto que tendrían algunos tratamientos o intervenciones quirúrgicas en el desarrollo del tumor.
+
+Esta funcionalidad se va a explicar de forma más detallada pues es la base sobre la que se implementarán los cambios para lograr simular la terapia adaptativa mencionada en el punto 1.2 (TODO).
+
+Las ``Intervenciónes'' están definidas por los siguientes parámetros:
+\begin{itemize}
+	\item \textbf{ID}: identificador de la intervención que la diferencia de las otras.
+	\item \textbf{Trigger}: expresión booleana que determina la condición que debe cumplirse en la simulación para que la intervención se lleve a cabo.
+	\item \textbf{WhatHappens}: expresión que determina el cambio que se produce al ejecutarse la intervención. Puede ser un cambio en la población total, en la de uno o varios genotipos, o una variación en el fitness de alguno de ellos.
+	\item \textbf{Periodicidad}: tiempo mínimo que debe pasar antes de que la misma intervención pueda ejecutarse de nuevo en caso de que esta se deba llevar a cabo varias veces.
+	\item \textbf{Repeticiones}: número máximo de veces que puede ejecutarse la intervención a lo largo de la simulación.
+\end{itemize}
+
+Partiendo de esta definición, en la rama se implementa un algoritmo en la función \textbf{executeInterventions} del fichero \textbf{interventions.cpp} que controla la ejecuciónd e las intervenciones mediante el proceso:
+\begin{enumerate}
+	\item para cada intervención
+	\begin{enumerate}
+		\item Si se cumple el \textbf{Trigger}:
+		\begin{enumerate}
+			\item Si ha pasado el tiempo mínimo de \textbf{Periodicidad} y quedan \textbf{Repeticiones} para la intervencion:
+				\begin{enumerate}
+					\item Se ejecutan los cambios definidios en \textbf{WhatHappens}.
+				\end{enumerate}
+		\end{enumerate}
+	\end{enumerate}
+\end{enumerate}
+
+Este algoritmo luego se inserta en el flujo principal de código de la simulación, para que en cada ciclo de esta se compruebe si se deben ejecutar y en caso afirmativo se lleven a cabo.
+
+En esta rama también se incluyen una nueva funcion de R que permite la definición de las propias intervenciones por parte del usuario, esta es:
+\begin{R}
+	createInterventions <- function(interventions, genotFitness, frequencyType = "auto")
+\end{R}
+Que realiza las comprobaciones necesarias para asegurar que la definiciñon de las intervenciones por parte del usuario es correcta, y prepara los datos de estas para pasarlos a C++.
+
+El usuario definirá las intervenciones en R mediante una lista con todas las intervenciones que desee especificar, cada una de las cuales será a su vez otra lista, con los atributos necesarios para definirla. Un ejemplo de esta definición es:
+\begin{R}
+	interventions <- list(
+		list(ID           = "intOverA",
+			Trigger       = "n_B >= 5",
+			WhatHappens   = "n_A = n_A * 0.1",
+			Repetitions   = 0,
+			Periodicity   = Inf
+		),list(
+			ID          = "intOverA2",
+			Trigger     = "(n_B >= 5) and (T > 4)",
+			WhatHappens = "n_ A= n_A * 0.4",
+			Repetitions = Inf,
+			Periodicity = Inf
+		)   
+   	)
+\end{R}
+
+De igual modo, se incluye tambien en la rama la definición de varias estructuras en C++ para almacenar los datos correspondientes a estas intervenciones, estas estructuras son \textbf{Interventions} que contiene los datos de cada intervención, e \textbf{InterventionsInfo} que contiene los datos para gestionar el conjunto de intervenciones definidas para una simulación. Ambas estructuras están definidas en \textbf{interventions.h}
+
+Por último, esta rama contiene tambien modificaciones ligeras en la función principal de simulación \textbf{OncoSimulIndiv} y muchas de sus sus sub-funciones tanto en R como en C++ para que estas tomen el argumento \textbf{interventions} de forma adecuada.
 
 
 
