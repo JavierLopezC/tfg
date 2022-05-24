@@ -12,15 +12,27 @@ Viendo esto, es notoria la importancia de disponer de mecanismos para ``predecir
 
 \section{Objetivos}
 
+Como hemos comentado en el apartado anterior, el principal objetivo de este trabajo es lograr que en el programa \textbf{OncoSimulR} puedan simularse de forma efectiva los efectos de la terapia adaptativa en la evolución de un tumor, es decir, se debe permitir que las intervenciones que ya se pueden definir durante las simulaciones en este programa, puedan variar en función del estado en el que se encuentra el tumor a lo largo de la simulación. Para ello, se deben llevar a cabo distintas acciones que vamos a desglosar en objetivos de menor tamañp, por tanto los objetivos serán:
+
 \begin{itemize}
-	\item Familiarizarse con OncoSimulR (esopecialmente el flujo general de simulación y las intervenciones)
-	\item Aprender sobre R y C++
-	\item Completar el merge de las ramas anteriores solucionando todos los errores que surjan
-	\item ¿Optimizar el código de intervenciones?
-	\item Añadir la posibilidad de definir variables de usuario arbitrariamente complejas tanto como salida en sí mismas como para emplearse en las intervenciones
-	\item Generar una batería de pruebas para comprobar el correcto funcionamiento de las variables de usuario y las intervenciones que las emplean
+	\item Familiarizarse con la herramienta OncoSimulR en el estado en que se encuentra previamente al inicio del trabajo (especialmente el flujo general de código de la simulación y el funcionamiento de las intervenciones, que son los aspectos más relacionados con la funcionalidad que se quiere implementar).
+	\item Aprender sobre R y C++, ya que son dos lenguajes con los que no estoy totalmente familiarizado al inicio de este trabajo.
+	\item Completar el merge de las ramas anteriores solucionando todos los errores que aparezcan durante el proceso.
+	\item Añadir la posibilidad de definir variables de usuario arbitrariamente complejas (que sean función de los parámetros de la simulacion tales como población total, subpoblaciones de los genotipos, fitness, etc) tanto como salida en sí mismas como para emplearse en las intervenciones, pues serán el mecanismo principal que permitirá la implementación de la terapia adaptativa, como veremos en el apartado 3.
+	\item Insertar la funcionalidad de las variables de usuario en el flujo general de código de la simulación, asegurándose de no afectar al funcionamiento de esta.
+	\item Permitir que las intervenciones empleen estas nuevas variables de usuario, generando así la posibilidad de simular la terapia adaptativa.
+	\item Generar una batería de pruebas extensa y lo más completa posible para comprobar el correcto funcionamiento de las variables de usuario y las intervenciones que las emplean.
 \end{itemize}
 
 \section{Estructura del documento}
 
-TODO: Descripción de la estructura del documento
+A lo largo de este documento se explicará en detalle todo el trabajo llevado a cambo para lograr los objetivos definidos en el punto anterior. Debido a la extensión de este, se dividirá la memoria en diversos apartados:
+\begin{itemize}
+	\item En primer lugar analizaremos el estado del arte, centrándonos en el punto en que se encuentra previamente a este trabajo la herramienta \textbf{OncoSimulR}, su funcionalidad disponible y el funcionamiento del algoritmo de simulación que implementa, así como el análisis detallado de las 2 ramas con funcionalidad recientemente implementada que deberán unificarse.
+	\item Tras esto en el apartado de diseño, veremos la estrategia definida para lograr la funcionalidad deseada en el programa, y como se ha planificado cada paso que se ha de llevar a cabo para alcanzar los objetivos.
+	\item Posteriormente, en el apartado de implementación, abordaremos el proceso de modificación del código del programa llevado a cabo para implementar los cambios definidos en el apartado de diseño. Este apartado incluye en detalle el proceso de unificación de ramas divergentes que se debió realizar previamente a la implementación de la nueva funcionalidad, que fue un proceso bastante más complejo de lo esperado incialmente.
+	\item Seguidamente, en el apartado de pruebas y resultados, explicaremos los tests llevados a cabo para asegurar el correcto funcionamiento de lo implementado, e ilustraremos la nueva funcionalidad con una serie de ejemplos de ejecución con sus correspondientes resultados.
+	\item Por último, extraeremos unas breves conclusiones acerca del proyecto, y analizaremos las posibles líneas de trabajo futuro para extender aún más esta funcionalidad.
+\end{itemize}
+
+Cabe destacar que, si bien una de las partes más complejas del trabajo ha sido la unificación de las ramas anteriores, debido a los problemas surjidos de esta, este tema no aparece reflejado en el apartado de diseño, puesto que no ha tenido una parte extensa de planificación, ya que no se tenía previsto que apareciesen todos estos problemas. Por tanto este tema se tratará directamente en el apartado de implementación, explicando de forma detallada los problemas detectados y cómo se han ido solucionando estos.
