@@ -44,7 +44,130 @@ Una vez hemos comprobado que las variables de usuario funcionan de forma adecuad
 
 Tras todo el trabajo realizado, en esta sección vamos a comprobar que, efectivamente, los resultados obtenidos cumplen con lo esperado e, incluso, se han logrado resultados positivos que no se habían planteado incialmente como objetivos del trabajo.
 
-\subsection{Terapia Adaptativa}
-Como se ha comentado a lo largo del documento, el principal objetivo de todas las modificaciones implementadas es lograr la simulación de la terapia adaptativa, explicada en detalle en el punto 2 (TODO). 
 \subsection{Variables de usuario como datos de interés a la salida}
-\subsection{Optimización en la ejecución de intervenciones}
+Al implementar las variables de usuario, como hemos comentado anteriormente, se permite obtener un enorme número de datos arbitrariamente complejos de la simulación a la salida. Estos pueden ser de gran interés para llegar a un entendimiento más profundo y detallado de lo ocurrido durante la simulación. En esta sección se van a plantear algunos ejemplo de ejecución en los que se saca partido a esta funcionalidad.
+
+\subsubsection{Representación de la proporción de cada genotipo sobre la población total}
+Comenzamos con un ejemplo muy sencillo en el que genramos un grupo de variables de usuario que almacenan la proporción de cada genotipo existente sobre el total de la población, es decir, matemáticamente cada una de estas variables es, para cada genotipo ``X'':
+$$proporcionX = n\_X/N$$
+Dónde ``n\_X'' es la población correspondiente al genotipo X, y ``N'' la población total.
+
+Con estas variables de usuario definidas iniciamos una simulación con 5 genotipos: \textbf{WT} (el inicial, sin mutaciones), \textbf{A}, \textbf{B}, \textbf{A,B} y \textbf{A,C}. Asignamos a cada uno de ellos sus fitness y sus poblaciones iniciales (estos detalles se pueden ver en detalle en el código adjunto en el anexo ... TODO con el código para ejecutar esta simulación), e iniciamos la simulación llamando a \textbf{OncoSimulIndiv}. En este caso simularemos tan solo un tiempo de 10 segundos, pues es suficiente para ver los datos que nos proporcionan las variables de usuario.
+
+Representando gráficamente los resultados obtenidos en las poblaciones de los genotipos vemos lo siguiente:
+
+Si ahora observamos tambien los resultados de las variables de usuario que representan la proporción de las poblaciones:
+
+Podemos observar claramente que los genotipos \textbf{AB} y \textbf{AC} son apenas relevantes comparados con los otros, y además se aprecia que el genotipo \textbf{B} aumenta de froma proporcional al descenso en la población del genotipo \textbf{A}.
+
+\subsubsection{Representación de la diferencia entre la tasa de nacimiento y muerte}
+Vamos ahora con otro ejemplo para analizar más profundamente el uso de variables de usuario. En este caso las que vamos a definir son variables que contengan el valor de la diferencia entre la tasa de nacimiento y muerte de los distintos genotipos. Este valor, por tanto, nos mostrará si se debería esperar que la población de un determinado genotipo crezca (si la diferencia es positiva) o disminuya (si es negativa). La fórmula para calcular estas variables de usuario es muy sencilla:
+$$diferenciaTasasX = b\_X - d\_X$$
+Dónde ``b\_X'' es la tasa de nacimiento correspondiente al genotipo X, y ``d\_X'' la de muerte.
+Del mismo modo que en el ejemplo anterior establecemos los datos de la simulación (visibles en el anexo ... TODO en el código para reproducir el ejemplo) que en este caso contará con 3 genotipos \textbf{WT} \textbf{A} y \textbf{B}, y, para que los datos de las tasas sean variables y más interesantes de analizar, definiremos el fitness como dependiente de las frecuencias de los genotipos, funcionalidad que también permite la herramienta \textbf{OncoSimulR}.
+
+Representando los resultados obtenidos con las variables de usuario que representan la diferencia de tasas:
+
+Viendo esto podemos estimar que a partir del tiempo 20-25 los genotipos \textbf{A} y \textbf{B} comenzarán a crecer, el segundo más rápidamente que el primero. \textbf{A} debería comenzar a caer alrededor del tiempo 50, cuando la diferencia de tasas pasa a ser negativa, mientras que \textbf{B} lo hará más tarde en el tiempo 100 cuando su diferencia de tasas se estabiliza por debajo de 0. Por su parte esperamos que \textbf{WT} comienze a decrecer alrededor del tiempo 40.
+
+Ahora observamos la evolución de las poblaciones:
+
+Comprobamos que, de froma bastante aproximada los resultados son los esperados; las pequeñas variaciones se deben al componente aleatorio que existe en la evolución de las poblaciones. Por tanto, la observación de la diferencia de tasas que nos proporcionan las variables de usuario nos permite ver unos datos objetivos para predecir la evolución poblacinal excluyendo la aleatoriedad del algoritmo.
+
+\subsection{Terapia Adaptativa}
+Procedemos ahora a analizar el resultado de la funcionalidad correspondiente al objetivo principal de este trabajo, que es lograr simular la terapia adaptativa. Para ello procedemos con una serie de ejemplos de ejecución que nos permitirán ver el funcionamiento de esta.
+
+\subsubsection{Selección de tratamiento según el genotipo más adaptado}
+Comenzamos con un ejemplo en el que se adaptará el tratamiento para enfocarse en el genotipo más adaptado y que, por tanto más posibildades tiene de desarrollarse. Para ello partimos del mismo ejemplo que en el punto anterior (5.3.2) en el que calculamos la diferencia de las tasas de nacimiento y muerte, para de esta forma estimar cual es el genotipo con más posibilidades de proliferar. Además añadimos un mínimo poblacional de 1000 células para detectar determinado genotipo, es decir, que si la población de un genotipo no es superior a 1000 no se tratará, pues no se considera suficiente para ser detectado.
+
+Tras esto definimos una serie de intervenciones para ``perjudicar'' el desarrollo del genotipo que tenga dicho valor más alto, estas intervenciones las definimos del siguiente modo:
+
+\begin{R}
+interventions <- list(
+    list(ID           = "i1",
+        Trigger       = "genADiff > genBDiff and genADiff > genWTDiff",
+        WhatHappens   = "n_A = n_A*0.5",
+        Periodicity   = 10,
+        Repetitions   = Inf
+    ),list(ID           = "i2",
+        Trigger       = "genBDiff > genADiff and genBDiff > genWTDiff",
+        WhatHappens   = "n_B = n_B*0.5",
+        Periodicity   = 10,
+        Repetitions   = Inf
+    )
+)
+\end{R}
+
+Tras esto iniciamos la simulación (el código para reproducir este ejmplo está en el anexo... TODO), obteniendo los siguientes resultados:
+
+Vemos que efectivamente las bajadas bruscas en la población que corresponden a las intervenciones se producen al comienzo en \textbf{WT} que comienza siendo el más adaptado pues tiene mayor diferencia entre las tasas, pero a partir del tiempo 30 aproximadamente, estas pasan a realizarse sobre el genotipo \textbf{B}, que justo es a partir de ese punto cuando comienza a tener una diferencia entre tasas mucho más alta.
+
+\subsubsection{Simulación de situación verosímil}
+Por último vamos a simular un escenario complejo de terapia adaptativa intentando acercarnos lo máximo posible a lo que podría ocurrir en un caso real. Para ello establecemos en qué consistiría esta terapia adaptativa aplicable en la realidad:
+\begin{enumerate}
+	\item Cada cierto tiempo el paciente tiene una revisión dónde se analiza el progreso de su tumor.
+	\item Si se detectan unos valores anormales se comienza un tratamiento base para tratar de frenar el avance de este.
+	\item Si se observa un crecimiento anormalmente grande de un tipo determinado de células se cambia el tratamiento que se estaba aplicando hata el momento por otro más enfocado a las células de ese tipo.
+	\item Si el tumo sobrepasa un cierto tamaño preestablecido se plantea la necesidad de realizar una intervención quirúrgica para tratar de eliminarlo.
+\end{enumerate}
+Para este ejmplo además consideraremos preocupenates las células de genotipos disntintos al \textbf{WT}, pues este es el incial sin mutaciones, y, por tanto, no se considera peligroso.
+
+Todo el código para reproducir este ejemplo se encuentra en el anexo ... TODO.
+
+Procedemos entonces a tratar de simular este escenario con 3 genotipos \textbf{WT}, \textbf{A} y \textbf{B}, para ello definimos en primer lugar una serie de variables de usuario que serán:
+\begin{itemize}
+	\item \textbf{measure}: flag que determina si toca realizar una medición o no (revisión del paciente).
+	\item \textbf{lastTime}: almacena el último tiempo en que se ha realizado una medición.
+	\item \textbf{lastMeasuredA}: valor de la población del genotipo A en la última medición.
+	\item \textbf{lastMeasuredB}: valor de la población del genotipo B en la última medición.
+	\item \textbf{previousA}: valor de la población del genotipo A en la medición anterior (permite luego calcular las diferencias para ver el crecimiento).
+	\item \textbf{previousB}: valor de la población del genotipo B en la medición anterior (permite luego calcular las diferencias para ver el crecimiento).
+	\item \textbf{treatment}: variable que determinará el tratamiento a aplicar.
+\end{itemize}
+
+Estas las modificaremos de acuerdo a las siguientes reglas:
+\begin{enumerate}
+	\item Si ``tiempo de simulación'' - \textbf{lastTime}  < 10 (no han pasado 10 segundos):  \textbf{measure} = 0 (no hay que medir).
+	\item Si ``tiempo de simulación'' - \textbf{lastTime}  > 10 (han pasado 10 segundos):  \textbf{measure} = 1 (hay que medir) y \textbf{lastTime} = ``tiempo de simulación''.
+	\item Si \textbf{measure} == 1 (hay que medir): \textbf{previousA} = \textbf{lastMeasuredA}; \textbf{previousB}=\textbf{lastMeasuredB}; \textbf{lastMeasuredA} = n\_A y \textbf{lastMeasuredB} = n\_B (almacenamos los datos medidos).
+		\item Si no se cumple ninguna de las condiciones siguientes (Si true): \textbf{treatment} = 0.
+	\item Si \textbf{lastMeasuredA} + \textbf{lastMeasuredB} > 100 (tumor detectable): \textbf{treatment} = 1.
+	\item Si \textbf{lastMeasuredA} - \textbf{previousA} > 500 (\textbf{A} ha crecido mucho): \textbf{treatment} = 2.
+	\item Si \textbf{lastMeasuredB} - \textbf{previousB} > 500 (\textbf{B} ha crecido mucho): \textbf{treatment} = 3.
+	\item Si \textbf{lastMeasuredA} - \textbf{previousA} > 500 AND \textbf{lastMeasuredB} - \textbf{previousB} > 500 (\textbf{A} y \textbf{B} han crecido mucho): \textbf{treatment} = 4.
+\end{enumerate}
+
+Ahora podemos definir las intervenciones en base al valor de \textbf{treatment} del siguiente modo:
+\begin{R}
+interventions <- list(
+    list(ID           = "basicTreatment",
+        Trigger       = "treatment == 1",
+        WhatHappens   = "N = 0.8*N",
+        Periodicity   = 10,
+        Repetitions   = Inf
+    ),list(ID           = "treatmentOverA",
+        Trigger       = "treatment == 2 or treatment == 4",
+        WhatHappens   = "n_B = n_B*0.3",
+        Periodicity   = 20,
+        Repetitions   = Inf
+    ),list(ID           = "treatmentOverB",
+        Trigger       = "treatment == 3 or treatment == 4",
+        WhatHappens   = "n_B = n_B*0.3",
+        Periodicity   = 20,
+        Repetitions   = Inf
+    ),list(ID           = "intervention",
+        Trigger       = "lastMeasuredA+lastMeasuredB > 5000",
+        WhatHappens   = "N = 0.1*N",
+        Periodicity   = 70,
+        Repetitions   = Inf
+    )
+)
+\end{R}
+
+Establecemos que el tratamiento básico se puede realizar cada 10 segundos, los específicos sobre \textbf{A} y \textbf{B} al ser más agresivos establecemos que sólo se pueden realizar cada 20 segundos, por último, la intervención quirúrgica no se puede realizar de forma muy habitual, por lo que establecemos que puede ocurrir cada 70 segundos, y se realizará cuando el conjunto de células peligrosas supere 5000.
+
+Con todo esto comenzamos la simulación, obteniendo el siguiente resultado poblacional:
+
+Podemos ver como a partir de aproximadamente el tiempo 100 comienza a haber pequeñas bajadas bruscas en todos los genotipos al mismo tiempo, correspondientes al tratamiento base. Luego alrededor del tiempo 150 el genotipo \textbf{B} aumenta demasiado y sufre una bajada más grande por su tratamiento específico; y, finalmente, alrededor del tiempo 160-170 las poblaciones \textbf{A} y \textbf{B} han crecido lo suficiente como para que se lleve a cabo una intervención, por lo que se desploman todas las poblaciones.
+
+Este es por tanto un clarísimo ejemplo de una terapia adaptada al progreso del tumor, y por tanto vemos que se ha logrado con éxito la simulación de la terapia adaptativa.
