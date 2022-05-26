@@ -52,11 +52,24 @@ Comenzamos con un ejemplo muy sencillo en el que genramos un grupo de variables 
 $$proporcionX = n\_X/N$$
 Dónde ``n\_X'' es la población correspondiente al genotipo X, y ``N'' la población total.
 
-Con estas variables de usuario definidas iniciamos una simulación con 5 genotipos: \textbf{WT} (el inicial, sin mutaciones), \textbf{A}, \textbf{B}, \textbf{A,B} y \textbf{A,C}. Asignamos a cada uno de ellos sus fitness y sus poblaciones iniciales (estos detalles se pueden ver en detalle en el código adjunto en el anexo ... TODO con el código para ejecutar esta simulación), e iniciamos la simulación llamando a \textbf{OncoSimulIndiv}. En este caso simularemos tan solo un tiempo de 10 segundos, pues es suficiente para ver los datos que nos proporcionan las variables de usuario.
+Con estas variables de usuario definidas iniciamos una simulación con 5 genotipos: \textbf{WT} (el inicial, sin mutaciones), \textbf{A}, \textbf{B}, \textbf{A,B} y \textbf{A,C}. Asignamos a cada uno de ellos sus fitness y sus poblaciones iniciales (estos detalles se pueden ver en detalle en el código adjunto en el apéndice A.1 con el código para ejecutar esta simulación), e iniciamos la simulación llamando a \textbf{OncoSimulIndiv}. En este caso simularemos tan solo un tiempo de 10 segundos, pues es suficiente para ver los datos que nos proporcionan las variables de usuario.
 
 Representando gráficamente los resultados obtenidos en las poblaciones de los genotipos vemos lo siguiente:
 
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=10cm]{imagenes/populationsUV1}
+	\caption{Evolución poblacional. Ejemplo 1 variables de usuario}
+	\label{fig:populatonUV1}
+\end{figure}
+
 Si ahora observamos tambien los resultados de las variables de usuario que representan la proporción de las poblaciones:
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=10cm]{imagenes/proportionUV1}
+	\caption{Proporción de genotipos en la población. Ejemplo 1 variables de usuario}
+	\label{fig:proportionUV1}
+\end{figure}
 
 Podemos observar claramente que los genotipos \textbf{AB} y \textbf{AC} son apenas relevantes comparados con los otros, y además se aprecia que el genotipo \textbf{B} aumenta de froma proporcional al descenso en la población del genotipo \textbf{A}.
 
@@ -64,13 +77,27 @@ Podemos observar claramente que los genotipos \textbf{AB} y \textbf{AC} son apen
 Vamos ahora con otro ejemplo para analizar más profundamente el uso de variables de usuario. En este caso las que vamos a definir son variables que contengan el valor de la diferencia entre la tasa de nacimiento y muerte de los distintos genotipos. Este valor, por tanto, nos mostrará si se debería esperar que la población de un determinado genotipo crezca (si la diferencia es positiva) o disminuya (si es negativa). La fórmula para calcular estas variables de usuario es muy sencilla:
 $$diferenciaTasasX = b\_X - d\_X$$
 Dónde ``b\_X'' es la tasa de nacimiento correspondiente al genotipo X, y ``d\_X'' la de muerte.
-Del mismo modo que en el ejemplo anterior establecemos los datos de la simulación (visibles en el anexo ... TODO en el código para reproducir el ejemplo) que en este caso contará con 3 genotipos \textbf{WT} \textbf{A} y \textbf{B}, y, para que los datos de las tasas sean variables y más interesantes de analizar, definiremos el fitness como dependiente de las frecuencias de los genotipos, funcionalidad que también permite la herramienta \textbf{OncoSimulR}.
+Del mismo modo que en el ejemplo anterior establecemos los datos de la simulación (visibles en el apéndice A.2 en el código para reproducir el ejemplo) que en este caso contará con 3 genotipos \textbf{WT} \textbf{A} y \textbf{B}, y, para que los datos de las tasas sean variables y más interesantes de analizar, definiremos el fitness como dependiente de las frecuencias de los genotipos, funcionalidad que también permite la herramienta \textbf{OncoSimulR}.
 
 Representando los resultados obtenidos con las variables de usuario que representan la diferencia de tasas:
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=10cm]{imagenes/rateDiffUV2}
+	\caption{Diferencia tasas nacimiento y muerte. Ejemplo 2 variables de usuario}
+	\label{fig:rateDiffUV2}
+\end{figure}
 
 Viendo esto podemos estimar que a partir del tiempo 20-25 los genotipos \textbf{A} y \textbf{B} comenzarán a crecer, el segundo más rápidamente que el primero. \textbf{A} debería comenzar a caer alrededor del tiempo 50, cuando la diferencia de tasas pasa a ser negativa, mientras que \textbf{B} lo hará más tarde en el tiempo 100 cuando su diferencia de tasas se estabiliza por debajo de 0. Por su parte esperamos que \textbf{WT} comienze a decrecer alrededor del tiempo 40.
 
 Ahora observamos la evolución de las poblaciones:
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=10cm]{imagenes/populationsUV2}
+	\caption{Evolución poblacional. Ejemplo 2 variables de usuario}
+	\label{fig:populationUV2}
+\end{figure}
 
 Comprobamos que, de froma bastante aproximada los resultados son los esperados; las pequeñas variaciones se deben al componente aleatorio que existe en la evolución de las poblaciones. Por tanto, la observación de la diferencia de tasas que nos proporcionan las variables de usuario nos permite ver unos datos objetivos para predecir la evolución poblacinal excluyendo la aleatoriedad del algoritmo.
 
@@ -98,7 +125,22 @@ interventions <- list(
 )
 \end{R}
 
-Tras esto iniciamos la simulación (el código para reproducir este ejmplo está en el anexo... TODO), obteniendo los siguientes resultados:
+Tras esto iniciamos la simulación (el código para reproducir este ejmplo está en el apéndice A.3), obteniendo los siguientes resultados:
+
+\begin{figure}[htp]
+ 	\begin{minipage}{0.48\textwidth}
+     		\centering
+     		\includegraphics[width=\linewidth]{imagenes/rateDiffAT1}
+		\caption{Diferencia tasas nacimiento y muerte. Ejemplo 1 terapia adaptativa}
+		\label{fig:rateDiffAt1}
+   	\end{minipage}\hfill
+   	\begin{minipage}{0.48\textwidth}
+     		\centering
+     		\includegraphics[width=\linewidth]{imagenes/populationsAT1}
+     		\caption{Evolución poblacional. Ejemplo 1 terapia adaptativa}
+		\label{fig:populationAT1}
+   	\end{minipage}
+\end{figure}
 
 Vemos que efectivamente las bajadas bruscas en la población que corresponden a las intervenciones se producen al comienzo en \textbf{WT} que comienza siendo el más adaptado pues tiene mayor diferencia entre las tasas, pero a partir del tiempo 30 aproximadamente, estas pasan a realizarse sobre el genotipo \textbf{B}, que justo es a partir de ese punto cuando comienza a tener una diferencia entre tasas mucho más alta.
 
@@ -112,7 +154,7 @@ Por último vamos a simular un escenario complejo de terapia adaptativa intentan
 \end{enumerate}
 Para este ejmplo además consideraremos preocupenates las células de genotipos disntintos al \textbf{WT}, pues este es el incial sin mutaciones, y, por tanto, no se considera peligroso.
 
-Todo el código para reproducir este ejemplo se encuentra en el anexo ... TODO.
+Todo el código para reproducir este ejemplo se encuentra en el apéndice A.4.
 
 Procedemos entonces a tratar de simular este escenario con 3 genotipos \textbf{WT}, \textbf{A} y \textbf{B}, para ello definimos en primer lugar una serie de variables de usuario que serán:
 \begin{itemize}
@@ -167,6 +209,13 @@ interventions <- list(
 Establecemos que el tratamiento básico se puede realizar cada 10 segundos, los específicos sobre \textbf{A} y \textbf{B} al ser más agresivos establecemos que sólo se pueden realizar cada 20 segundos, por último, la intervención quirúrgica no se puede realizar de forma muy habitual, por lo que establecemos que puede ocurrir cada 70 segundos, y se realizará cuando el conjunto de células peligrosas supere 5000.
 
 Con todo esto comenzamos la simulación, obteniendo el siguiente resultado poblacional:
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=10cm]{imagenes/resultsAT2}
+	\caption{Evolución poblacional. Ejemplo 2 terapia adaptativa}
+	\label{fig:populationAT2}
+\end{figure}
 
 Podemos ver como a partir de aproximadamente el tiempo 100 comienza a haber pequeñas bajadas bruscas en todos los genotipos al mismo tiempo, correspondientes al tratamiento base. Luego alrededor del tiempo 150 el genotipo \textbf{B} aumenta demasiado y sufre una bajada más grande por su tratamiento específico; y, finalmente, alrededor del tiempo 160-170 las poblaciones \textbf{A} y \textbf{B} han crecido lo suficiente como para que se lleve a cabo una intervención, por lo que se desploman todas las poblaciones.
 

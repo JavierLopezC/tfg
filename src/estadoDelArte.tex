@@ -1,5 +1,5 @@
 \chapter{Estado del Arte. OncoSimulR\label{sec:estado_del_arte}}
-Hemos visto en el apartado anterior, que la principal motivación de este proyecto es lograr la reproducir la terapia adaptativa durante un proceso de simulación de progresión tumoral. Para ello vamos a trabajar sobre el paquete OncoSimulR de R que implementa un simulador de este tipo.
+Hemos visto en el apartado anterior, que la principal motivación de este proyecto es lograr la reproducir la terapia adaptativa durante un proceso de simulación de progresión tumoral. Para ello vamos a trabajar sobre el paquete OncoSimulR \cite{OncoSimulR} de R que implementa un simulador de este tipo.
 
 Los simuladores de progresión tumoral son programas que permiten reproducir de forma artificial la evolución de un grupo de células tumorales dadas unas condiciones iniciales concretas. Son de gran interés en el ámbito de la biología pues permiten una gran obtención de datos acerca de la evolución modelos tumorales cuyo estudio siguiendo la via teórica y matemática es excesivamente complejo. Permiten también en algunos casos (como es el caso de \textbf{OncoSimulR}) emular también los efectos que tendrían ciertos tratamientos o variaciones en las condiciones externas en la progresión de dichos tumores.
 
@@ -86,7 +86,7 @@ Al modificarse estas estructuras, se introducen también ligeros cambios en toda
 \subsection{Intervenciones}
 La funcionalidad correspondiente a la simulación de tratamientos mediante lo que en la aplicación \textbf{OncoSimulR} se llaman ``intervenciones'' está implementada en otra rama separada. En ella se permite definir ciertos cambios en la población o el fitness de uno o varios genotipos, que se llevarán a cambo cuando se cumpla una determinada condición o ``trigger''. De este modo se puede emular el efecto que tendrían algunos tratamientos o intervenciones quirúrgicas en el desarrollo del tumor.
 
-Esta funcionalidad se va a explicar de forma más detallada pues es la base sobre la que se implementarán los cambios para lograr simular la terapia adaptativa mencionada en el punto 1.2 (TODO).
+Esta funcionalidad se va a explicar de forma más detallada pues es la base sobre la que se implementarán los cambios para lograr simular la terapia adaptativa mencionada en el punto 1.1.
 
 Las ``Intervenciónes'' están definidas por los siguientes parámetros:
 \begin{itemize}

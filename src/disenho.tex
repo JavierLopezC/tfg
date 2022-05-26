@@ -2,11 +2,11 @@
 
 \section{Introducción. Terapia adaptativa y variables de usuario}
 
-Como hemos visto en la sección 1.1 (TODO), la base fundamental de la terapia adaptativa es la posibilidad de crear tratamientos específicos para determinados momentos en el desarrollo de un tumor. Dentro del programa \textbf{OncoSimulR} los tratamientos están simulados a traves de las \textbf{intervenciones}. Por tanto, para simular la terapia adaptativa debemos lograr que estas intervenciones puedan depender del  estado de desarrollo del tumor, es decir, del estado de la simulación en el momento concreto en que se va a ejecutar la intervención.
+Como hemos visto en la sección 1.1, la base fundamental de la terapia adaptativa es la posibilidad de crear tratamientos específicos para determinados momentos en el desarrollo de un tumor. Dentro del programa \textbf{OncoSimulR} los tratamientos están simulados a traves de las \textbf{intervenciones}. Por tanto, para simular la terapia adaptativa debemos lograr que estas intervenciones puedan depender del  estado de desarrollo del tumor, es decir, del estado de la simulación en el momento concreto en que se va a ejecutar la intervención.
 
 Para ello se ha decidido añadir al programa la posibilidad de definiri variables de usuario, es decir, se ha incluido la posibilidad de que el usuario defina una serie de variables cuyo valor sea una función arbitrariamente compleja de distintos parámetros de la simulación. A lo largo de la simulación tumoral, estas variables se irán actualizando de acuardo a la fórmula introducida por el usuario, haciendo que los valores vayan variando en función de la evolución del tumor. 
 
-Estas variables podrán luego ser empleadas para elaborar las expresiones que definen la acción a realizar en una intervención (como se ha visto en el punto 2 TODO), permitiendo así condicionar el efecto de una intervención al estado del tumor en el momento de la ejecución de esta, es decir, permitiendo la terapia adaptativa.
+Estas variables deberán poder ser empleadas para elaborar las expresiones que definen la acción a realizar en una intervención (explicadas en el punto 2.2.2), permitiendo así condicionar el efecto de una intervención al estado del tumor en el momento de la ejecución de esta, es decir, permitiendo la terapia adaptativa.
 
 Con esto en mente procedemos al diseño de estas variables de usuario.
 

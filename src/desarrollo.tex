@@ -14,21 +14,21 @@ A lo largo de este apartado se mencionará reitradamente el uso de las librería
 
 \section{Unificación de Ramas}
 
-Cómo se ha explicado en el punto 2 (TODO) al iniciar este trabajo se partía de 2 ramas con versiones distintas del programa OncoSimulR cada una con una funcionalidad recientemente implementada en cada una de ellas. Estas 2 ramas debían unificarse para proceder a la implementación de la nueva funcionalidad sobre la versión combinada de ambas.
+Cómo se ha explicado en el punto 2.2 al iniciar este trabajo se partía de dos ramas con versiones distintas del programa OncoSimulR cada una con una funcionalidad recientemente implementada en cada una de ellas. Estas ramas debían unificarse para proceder a la implementación de la nueva funcionalidad sobre la versión combinada de ambas.
 
-La unificación de ambas ramas se realizó de manrea manual, ya que el merge automático proporcionado por la herramienta Git generaba un gran número de conflictos y no respetaba la funcionalidad de las ramas. Al proceder, se decidió realizar el merge sobre la rama que contenía la funcionalidad del birth y death rate (explicada en el punto 2 TODO) por ser la que más modificaciones introducía sobre el código base de la simulación, y sobre esta se introdujeron los cambios correspondientes a la rama con la funcionalidad de las intervenciones (explicada en el punto 2 TODO).
+La unificación de ambas ramas se realizó de manrea manual, ya que el merge automático proporcionado por la herramienta Git generaba un gran número de conflictos y no respetaba la funcionalidad de las ramas. Al proceder, se decidió realizar el merge sobre la rama que contenía la funcionalidad del birth y death rate (explicada en el punto 2.2.1) por ser la que más modificaciones introducía sobre el código base de la simulación, y sobre esta se introdujeron los cambios correspondientes a la rama con la funcionalidad de las intervenciones (explicada en el punto 2.2.2).
 
 Para realizar la unificación de ambas ramas se procedió del siguiente modo:
 \begin{enumerate}
 	\item Sobre la rama que se ha indicado anteriormente se añadieron los ficheros de código R y C++ exclusivos de la funcionalidad de intervenciones (intervention.cpp, intervention.h, intervention.R, multivarioant\_hypergeometric.cpp y multivariant\_hypergeometric.h), los ficheros de testeo de esta funcionalidad (test.intervention.R y test.Z-intervention.R) y los ficheros de documentación y viñetas que expican e ilustran el funcionamiento de esta.
 	\item Tras esto se procedió a la modificación de la función \textbf{updatePopulations} del fichero intervention.cpp, encargada de actualizar las poblaciones de los distintos genotipos tras la ejecución de una intervención, para que emplease el birth y death rate implementado en la funcionalidad de la otra rama.
-	\item Se actualizó el flujo de código principal del algoritmo BNB de Mahler (TODO: explicado en el punto 2) en el fichero BNB\_nr.cpp para añadir las llamadas necesarias para añadir la funcionalidad correspondiente a la ejecución de las intervenciones.
+	\item Se actualizó el flujo de código principal del algoritmo BNB de Mahler (explicado en el punto 2.1) en el fichero BNB\_nr.cpp para añadir las llamadas necesarias para añadir la funcionalidad correspondiente a la ejecución de las intervenciones.
 	\item Por último se modificaron las cabeceras y llamadas a todas las funciones del programa OncoSimulR para que tomasen de forma adecuada el argumento interventions, teniendo especial cuidado al tratar con los ficheros RcppExports.R, RcppExports.cpp y OncoSimulR\_init.c, encargados de la comunicación entre los ficheros en R y en C++ mediante la librería Rcpp.
 \end{enumerate}
 
 Posteriormente se realizó un merge automático con una tercera rama modificada por el tutor de este trabajo para incluir unas pequeñas modificaciones en la documentación del programa.
 
-Al finalizar este proceso, se procedió a la comprobación de que la funcionalidad de ambas ramas era correcta en la rama combinada mediante la ejecución de los tests pertinentes, y a asegurar que el merge no ha afectado al resto de características del programa. Todo este testeo se explicará de forma más detallada en el punto 5.1 TODO.
+Al finalizar este proceso, se procedió a la comprobación de que la funcionalidad de ambas ramas era correcta en la rama combinada mediante la ejecución de los tests pertinentes, y a asegurar que el merge no ha afectado al resto de características del programa. Todo este testeo se explicará de forma más detallada en el punto 5.1.
 
 \section{Optimización del código de intervenciones}
 Durante la realización del merge de las ramas previas, se encontraron algunos problemas de optimización en el código de las intervenciones que hacían que el tiempo de ejecución fuese más alto de lo deseado, por tanto antes de proseguir con la nueva funcionalidad se procedió a solucionar esto.
@@ -45,7 +45,7 @@ Los cambios realizados, por tanto, fueron:
 	\item Modificamos también la función \textbf{parseWhatHappens} para que devuelva void en vez de true/false. Antes devolvía true si se ejecutaba sin errores y en caso de error lanzaba una excepción y devolvía false, lo cual no tenía sentido, por tanto ahora no devuelve nada y en caso de error simplemente lanza una excepción.
 \end{itemize}
 
-Tras esto de nuevo procedemos a comprobar que la funcionalidad es correcta mediante los tests explicados en el punto 5 TODO, y procedemos a comenzar con la nueva funcionalidad.
+Tras esto de nuevo procedemos a comprobar que la funcionalidad es correcta mediante los tests explicados en el punto 5.1, y procedemos a comenzar con la nueva funcionalidad.
 
 \section{Implementación de variables de usuario y reglas}
 
@@ -261,13 +261,14 @@ Conociendo estos datos, la función opera de la siguiente manera:
 
 \section{Integración en el flujo principal de código}
 
-Una vez definidas la funcionalidad de las variables de usuario y las reglas en el TAD anteriormente explicado, se procede a la integración de esta en el flujo principal de cósigo de la simulación tumoral. Para ello se han incluido fragmentos de código que ejecutan las funciones de actualización de las variables de usuario dentro de la función \textbf{nr\_innerBNB} del fichero \textbf{BNB\_nr.cpp}, que es la que implementa el algoritmo BNB de Mahler explicado en el punto 2 (TODO).
+Una vez definidas la funcionalidad de las variables de usuario y las reglas en el TAD anteriormente explicado, se procede a la integración de esta en el flujo principal de cósigo de la simulación tumoral. Para ello se han incluido fragmentos de código que ejecutan las funciones de actualización de las variables de usuario dentro de la función \textbf{nr\_innerBNB} del fichero \textbf{BNB\_nr.cpp}, que es la que implementa el algoritmo BNB de Mahler explicado en el punto 2.1.
 
 La actualización de las variables de usuario se incluye dentro de esta función, de manera que se ejecute una vez por cada ciclo de muestreo de la simulación. Con el fin de poder simular la terapia adaptativa, es necesario poder emplear estas variables de usuario calculadas en la ejecución de las intervenciones, por tanto, esta actualización debe realizarse antes de que estas se ejecuten en cada ciclo. Finalmente se ha decidido realizar la actualización justo en el punto entre la actualización de las poblaciones de los genotipos según las tasas de nacimiento, muerte y mutación, y la ejecución de las intervenciones; de este modo las variables de usuario se actualizan de acuerdo a los datos temporalmente más cercanos posibles a la ejecución de las intervneciones, que es, por el momento, la principal funcionalidad para la que se van a emplear estas variables.
 
 Se valoró la posibilidad de recalcular de nuevo las variables de usuario  despues de la ejecución de las intervenciones, pues estas pueden variar ciertos datos tales como la población, que afectarían al valor de estas variables. Sin embargo, esta opción se terminó descartando puesto que, al modificar las variables 2 veces por ciclo, se estaría aumentando notablemente el coste computacional del algoritmo, proporcionando además una infomación que, si bien es más precisa, no genera un beneficio suficientemente significativo como para justificar el coste.
 
 Para realizar la actualización de las variables en el algoritmo de simulación principal mencionado, añadimos a este el siguiente fragmento de código:
+
 \begin{CPP}
       std::map<std::string, double> birthMap = evalFVarsFitness(fitnessEffects, Genotypes, popParams, "birth");
       std::map<std::string, double> deathMap = evalFVarsFitness(fitnessEffects, Genotypes, popParams, "death");

@@ -1,10 +1,15 @@
 \chapter{Conclusiones y trabajo futuro\label{sec:conclusiones}}
 
 \section{Conclusiones}
+Durante el desarrollo de este trabajo se ha implementado en el programa \textbf{OncoSimulR} un módulo para permitir la creación y tratamiento de variables arbitráriamente complejas definidas por el usuario para tracear durante la simulación. Además se ha ampliado la funcionalidad que ya existía para simulación de intervenciones y tratamientos, permitiendo que estas empleen las variables de usuario creadas, logrando así reproducir conjuntos complejos de tratamientos aplicables en función de la evolución del conjunto de células tumorales, es decir, se ha permitido emular la terapia adaptativa.
+
+Desde un punto de vista académico, este trabajo ha oermitido al autor familiarizarse y sentírse cómodo con los lenguajes R y C++ que no dominaba, así como ampliar su conocimiento acerca de algoritmos genéticos, y aprender sobre los algoritmos específicos de simulación tumoral. Además, ha permitido que este adquiera nociones básicas de genética y medicina relacionadas directamente con los procesos tumorales, abriéndolo a un posible campo de interés en el futuro.
 
 \section{Líneas de trabajo futuro}
 
+La funcionalidad desarrollada en este proyecto, si bien es bastante completa, abre camino a una serie de posibles mejoras y funcionalidad futura. Algunas posibles mejoras que se podrían plantear son:
+
 \begin{itemize}
-	\item Emplear variables de usuario en otras funcionalidades más allá de las intervenciones
-	\item Permitir graficar variables de usuario en función del tiempo como una salida interesante de forma similar a la evolución de la población de los genotipos
+	\item Ampliar el nñumero de variables que se pueden emplear para definir las variables de usuario, haciéndolas aún más libres y permitiendo prácticamente cualquier función que se le pueda ocurrir al usuario.
+	\item Implementar funciones para representar gráficamente de forma eficiente los valores en el tiempo de las variables de usuario, puesto que por el momento, la salida es simplemente en fomra de tabla de datos y realizar una gráfica con estos es ligeramente engorroso.
 \end{itemize}

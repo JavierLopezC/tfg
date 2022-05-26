@@ -1,87 +1,327 @@
-\chapter{Ejemplos de bloques y comandos útiles en LaTeX\label{sec:ejemplos}}
-\section{Ejemplo de sección}
+\chapter{Código para  reproducir los ejemplos de la sección Resultados \label{sec:ejemplos}}
+\section{Ejemplo  de uso de variables de usuario para controlar la proporcion de cada genotipo en la población total}
+Código para reproducir el segundo ejemplo del punto 5.3.1:
+\begin{R}
+dfuv2 <- data.frame(Genotype = c("WT", "B", "A", "B, A", "C, A"),
+                       Fitness = c("0*n_",
+                                    "1.5",
+                                    "1.002",
+                                    "1.003",
+                                    "1.004"))
 
-%
-% Breve guía de comandos útiles para la memoria
-%
+afuv2 <- allFitnessEffects(genotFitness = dfuv2,
+                          frequencyDependentFitness = TRUE,
+                          frequencyType = "abs")
 
-% Citar una referencia
-La DARPA creó el protocolo de Internet \cite{ipv4sta}.
+userVars <- list(
+    list(Name           = "genAProp",
+        Value       = 0.5
+    ),list(Name           = "genBProp",
+        Value       = 0.5
+    ),list(Name           = "genABProp",
+        Value       = 0.0
+    ),list(Name           = "genACProp",
+        Value       = 0.0
+    )
+)
 
-% Citar un elemento del glosario
-Citamos el acrónimo \gls{FPGA}.
+userVars <- createUserVars(userVars)
 
-% Citar un elemento del glosario (primera letra en may´usculas)
-\Gls{bitstream} es una secuencia de bits.
+rules <- list(
+        list(ID = "rule_1",
+            Condition = "TRUE",
+            Action = "genBProp = n_B/N"
+        ),list(ID = "rule_2",
+            Condition = "TRUE",
+            Action = "genAProp = n_A/N"
+        ),list(ID = "rule_3",
+            Condition = "TRUE",
+            Action = "genABProp = n_A_B/N"
+        ),list(ID = "rule_4",
+            Condition = "TRUE",
+            Action = "genACProp = n_A_C/N"
+        )
+    )
 
-% Insertar una imagen con pie de página
-\begin{figure}[htp!]
-  \centering
-  \includegraphics[width=0.75\textwidth,clip=true]{Logo_UAM}
-  \caption{Logo de la Universidad Autónoma de madrid.}
-  \label{fig:logo_uam}
-\end{figure} 
+rules <- createRules(rules, afuv2)
 
-% Referenciar una etiqueta (label)
-La figura~\ref{fig:logo_uam} se utiliza en la portada.
+set.seed(1)
+uvex2 <- oncoSimulIndiv(
+                    afuv2, 
+                    model = "McFLD",
+                    mu = 1e-4,
+                    sampleEvery = 0.01,
+                    initSize = c(20000, 20000),
+                    initMutant = c("A", "B"),
+                    finalTime = 10,
+                    onlyCancer = FALSE,
+                    userVars = userVars,
+                    rules = rules
+                    )
 
-% Nueva página
-\clearpage
+plot(uvex2, show = "genotypes", type = "line")      
 
-% Añadir código fuente sin líneas
-\begin{lstlisting}[label=algoritmo:quicksort,language=C,frame=single,caption=Algoritmo de ordenación Quicksort]
-#include <stdio.h>
- 
-void quick_sort (int *a, int n) {
-    int i, j, p, t;
-    if (n < 2)
-        return;
-    p = a[n / 2];
-    for (i = 0, j = n - 1;; i++, j--) {
-        while (a[i] < p)
-            i++;
-        while (p < a[j])
-            j--;
-        if (i >= j)
-            break;
-        t = a[i];
-        a[i] = a[j];
-        a[j] = t;
-    }
-    quick_sort(a, i);
-    quick_sort(a + i, n - i);
-}
-\end{lstlisting}
+plot(unlist(uvex2$other$userVarValues) [c(FALSE, FALSE, FALSE, FALSE, TRUE)], unlist(uvex2$other$userVarValues) [c(TRUE, FALSE, FALSE, FALSE, FALSE)], xlab="Time", ylab="Proportion", ylim=c(0,1), type="l", col="purple")  
+lines(unlist(uvex2$other$userVarValues) [c(FALSE, FALSE, FALSE, FALSE, TRUE)], unlist(uvex2$other$userVarValues) [c(FALSE, TRUE, FALSE, FALSE, FALSE)], type="l", col="#E6AB02") 
+lines(unlist(uvex2$other$userVarValues) [c(FALSE, FALSE, FALSE, FALSE, TRUE)], unlist(uvex2$other$userVarValues) [c(FALSE, FALSE, TRUE, FALSE, FALSE)], type="l", col="#1B9E77") 
+lines(unlist(uvex2$other$userVarValues) [c(FALSE, FALSE, FALSE, FALSE, TRUE)], unlist(uvex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE, FALSE)], type="l", col="#666666") 
+legend(0,1,legend=c("genABProp", "genACProp", "genAProp", "genBProp"), col=c("purple", "#E6AB02", "#1B9E77", "#666666"), lty= 1:2) 
+\end{R}
+\section{Ejemplo  de uso de variables de usuario para calcular la diferencia entre tasa de nacimiento y muerte de los genotipos}
+Código para reproducir el segundo ejemplo del punto 5.3.1:
+\begin{R}
+dfuv3 <- data.frame(Genotype = c("WT", "A", "B"), 
+                   Fitness = c("1",
+                               "1 + 0.2 * (n_B > 10)",
+                               ".9 + 0.4 * (n_A > 10)"
+                               ))
+afuv3 <- allFitnessEffects(genotFitness = dfuv3, 
+                         frequencyDependentFitness = TRUE)
 
-% Bloque de código inseparable
-\begin{code}
-#include <stdio.h>
- 
-void quick_sort (int *a, int n) {
-    int i, j, p, t;
-    if (n < 2)
-        return;
-    p = a[n / 2];
-    for (i = 0, j = n - 1;; i++, j--) {
-        while (a[i] < p)
-            i++;
-        while (p < a[j])
-            j--;
-        if (i >= j)
-            break;
-        t = a[i];
-        a[i] = a[j];
-        a[j] = t;
-    }
-    quick_sort(a, i);
-    quick_sort(a + i, n - i);
-}
-\end{code}
+userVars <- list(
+    list(Name           = "genWTRateDiff",
+        Value       = 0.5
+    ),list(Name           = "genARateDiff",
+        Value       = 0.5
+    ),list(Name           = "genBRateDiff",
+        Value       = 0.0
+    )
+)
 
-% Fórmula dentro de una línea de texto
-La ecuación de Euler ($e^{ \pm i\theta } = \cos \theta \pm i\sin \theta$) es citada frecuentemente como un ejemplo de belleza matemática.
+userVars <- createUserVars(userVars)
 
-% Fórmula independiente
-\begin{equation}\label{eq:pythagoras}
-a^2 + b^2 = c^2
-\end{equation}
+rules <- list(
+        list(ID = "rule_1",
+            Condition = "TRUE",
+            Action = "genWTRateDiff = b_-d_"
+        ),list(ID = "rule_2",
+            Condition = "TRUE",
+            Action = "genARateDiff = b_1-d_1"
+        ),list(ID = "rule_3",
+            Condition = "TRUE",
+            Action = "genBRateDiff = b_2-d_2"
+        )
+    )
+
+rules <- createRules(rules, afuv3)
+
+set.seed(1)
+
+uvex3 <- oncoSimulIndiv(afuv3,
+                       model = "McFLD", 
+                       onlyCancer = FALSE, 
+                       finalTime = 150,
+                       mu = 1e-4,
+                       initSize = 5000, 
+                       keepPhylog = FALSE,
+                       seed = NULL, 
+                       errorHitMaxTries = FALSE, 
+                       errorHitWallTime = FALSE,
+                       userVars = userVars,
+                       rules = rules)
+
+plot(uvex3, show = "genotypes", type = "line")    
+
+plot(unlist(uvex3$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(uvex3$other$userVarValues) [c(FALSE, FALSE, TRUE, FALSE)], xlab="Time", ylab="Rate Diff", xlim=c(0,150), ylim=c(-0.75,0.75), type="l", col="#1B9E77")  
+lines(unlist(uvex3$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(uvex3$other$userVarValues) [c(TRUE, FALSE, FALSE, FALSE)], type="l", col="#A6761D") 
+lines(unlist(uvex3$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(uvex3$other$userVarValues) [c(FALSE, TRUE, FALSE, FALSE)], type="l", col="#666666") 
+legend(0,0.75,legend=c("genWTRateDiff", "genARateDiff", "genBRateDiff"), col=c("#1B9E77", "#A6761D", "#666666"), lty= 1:2) 
+\end{R}
+\section{Ejemplo de terapia adaptativa para atacar al genotipo más adaptado}
+Código para reproducir el primer ejemplo del punto 5.3.2:
+\begin{R}
+dfat2 <- data.frame(Genotype = c("WT", "A", "B"), 
+                   Fitness = c("1",
+                               "1 + 0.2 * (n_B > 10)",
+                               ".9 + 0.4 * (n_A > 10)"
+                               ))
+afat2 <- allFitnessEffects(genotFitness = dfat2, 
+                         frequencyDependentFitness = TRUE)
+    
+
+userVars <- list(
+    list(Name           = "genADiff",
+        Value       = 0
+    ),list(Name           = "genBDiff",
+        Value       = 0
+    ),list(Name           = "genWTDiff",
+        Value       = 0
+    )
+)
+
+userVars <- createUserVars(userVars)
+
+rules <- list(
+        list(ID = "rule_1",
+            Condition = "TRUE",
+            Action = "genADiff = b_1-d_1"
+        ),list(ID = "rule_2",
+            Condition = "TRUE",
+            Action = "genBDiff = b_2-d_2"
+        ),list(ID = "rule_3",
+            Condition = "TRUE",
+            Action = "genWTDiff = b_-d_"
+        ),list(ID = "rule_4",
+            Condition = "n_A < 1000",
+            Action = "genADiff = -1"
+        ),list(ID = "rule_5",
+            Condition = "n_B < 1000",
+            Action = "genBDiff = -1"
+        ),list(ID = "rule_6",
+            Condition = "n_ < 1000",
+            Action = "genWTDiff = -1"
+        )
+    )
+
+rules <- createRules(rules, afat2)
+
+interventions <- list(
+    list(ID           = "i1",
+        Trigger       = "genADiff > genBDiff and genADiff > genWTDiff",
+        WhatHappens   = "n_A = n_A*0.5",
+        Periodicity   = 10,
+        Repetitions   = Inf
+    ),list(ID           = "i2",
+        Trigger       = "genBDiff > genADiff and genBDiff > genWTDiff",
+        WhatHappens   = "n_B = n_B*0.5",
+        Periodicity   = 10,
+        Repetitions   = Inf
+    ),list(ID           = "i3",
+        Trigger       = "genWTDiff > genADiff and genWTDiff > genBDiff",
+        WhatHappens   = "n_ = n_*0.5",
+        Periodicity   = 10,
+        Repetitions   = Inf
+    )
+)
+
+interventions <- createInterventions(interventions, afat2)
+
+set.seed(1) ## for reproducibility
+atex2 <- oncoSimulIndiv(afat2,
+                       model = "McFLD", 
+                       onlyCancer = FALSE, 
+                       finalTime = 200,
+                       mu = 1e-4,
+                       initSize = 5000, 
+                       keepPhylog = FALSE,
+                       seed = NULL, 
+                       errorHitMaxTries = FALSE, 
+                       errorHitWallTime = FALSE,
+                       userVars = userVars,
+                       rules = rules,
+                       interventions = interventions)
+
+plot(atex2, show = "genotypes", type = "line")
+
+plot(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(atex2$other$userVarValues) [c(TRUE, FALSE, FALSE, FALSE)], xlab="Time", ylab="RateDiff", ylim=c(-0.75,0.75), type="l", col="#A6761D")  
+lines(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(atex2$other$userVarValues) [c(FALSE, TRUE, FALSE, FALSE)], type="l", col="#666666") 
+lines(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(atex2$other$userVarValues) [c(FALSE, FALSE, TRUE, FALSE)], type="l", col="#1B9E77") 
+legend(0,0.75,legend=c("genADiff", "genBDiff", "genWTDiff"), col=c("#A6761D", "#666666", "#1B9E77"), lty= 1:2) 
+\end{R}
+\section{Ejemplo de terapia adaptativa en escenario verosímil}
+Código para reproducir el segundo ejemplo del punto 5.3.2:
+\begin{R}
+dfat3 <- data.frame(Genotype = c("WT", "A", "B"), 
+                   Fitness = c("1",
+                               "0.8 + 0.2 * (n_B > 10) + 0.1 (n_A > 10)",
+                               "0.8 + 0.25 * (n_B > 10)"
+                               ))
+afat3 <- allFitnessEffects(genotFitness = dfat3, 
+                         frequencyDependentFitness = TRUE)
+    
+
+userVars <- list(
+    list(Name           = "lastMeasuredA",
+        Value       = 0
+    ),list(Name           = "lastMeasuredB",
+        Value       = 0
+    ),list(Name           = "previousA",
+        Value       = 0
+    ),list(Name           = "previousB",
+        Value       = 0
+    ),list(Name           = "lastTime",
+        Value       = 0
+    ),list(Name           = "measure",
+        Value       = 0
+    ),list(Name           = "treatment",
+        Value       = 0
+    )
+)
+
+userVars <- createUserVars(userVars)
+
+rules <- list(
+       list(ID = "rule_1",
+            Condition = "T - lastTime < 10",
+            Action = "measure = 0"
+        ),list(ID = "rule_2",
+            Condition = "T - lastTime >= 10",
+            Action = "measure = 1;lastTime = T"
+        ),list(ID = "rule_3",
+            Condition = "measure == 1",
+            Action = "previousA = lastMeasuredA;previousB = lastMeasuredB;lastMeasuredA = n_A;lastMeasuredB = n_B"
+        ), list(ID = "rule_4",
+            Condition = "TRUE",
+            Action = "treatment = 0"
+        ), list(ID = "rule_5",
+            Condition = "lastMeasuredA + lastMeasuredB > 100",
+            Action = "treatment = 1"
+        ), list(ID = "rule_6",
+            Condition = "lastMeasuredA - PreviousA > 500",
+            Action = "treatment = 2"
+        ),list(ID = "rule_7",
+            Condition = "lastMeasuredB - PreviousB > 500",
+            Action = "treatment = 3"
+        ), list(ID = "rule_8",
+            Condition = "lastMeasuredA - PreviousA > 500 and lastMeasuredB - PreviousB > 500",
+            Action = "treatment = 4"
+        )
+    )
+
+rules <- createRules(rules, afat3)
+
+
+interventions <- list(
+    list(ID           = "basicTreatment",
+        Trigger       = "treatment == 1",
+        WhatHappens   = "N = 0.8*N",
+        Periodicity   = 10,
+        Repetitions   = Inf
+    ),list(ID           = "treatmentOverA",
+        Trigger       = "treatment == 2 or treatment == 4",
+        WhatHappens   = "n_B = n_B*0.3",
+        Periodicity   = 20,
+        Repetitions   = Inf
+    ),list(ID           = "treatmentOverB",
+        Trigger       = "treatment == 3 or treatment == 4",
+        WhatHappens   = "n_B = n_B*0.3",
+        Periodicity   = 20,
+        Repetitions   = Inf
+    ),list(ID           = "intervention",
+        Trigger       = "lastMeasuredA+lastMeasuredB > 5000",
+        WhatHappens   = "N = 0.1*N",
+        Periodicity   = 70,
+        Repetitions   = Inf
+    )
+)
+
+interventions <- createInterventions(interventions, afat3)
+
+set.seed(1) ## for reproducibility
+atex2 <- oncoSimulIndiv(afat3,
+                       model = "McFLD", 
+                       onlyCancer = FALSE, 
+                       finalTime = 200,
+                       mu = 1e-4,
+                       initSize = 5000, 
+                       keepPhylog = FALSE,
+                       seed = NULL, 
+                       errorHitMaxTries = FALSE, 
+                       errorHitWallTime = FALSE,
+                       userVars = userVars,
+                       rules = rules,
+                       interventions = interventions)
+
+plot(atex2, show = "genotypes", type = "line")
+\end{R}
+
