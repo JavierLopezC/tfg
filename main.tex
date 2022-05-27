@@ -22,10 +22,10 @@
 
 % Glosario y acrónimos
 \makeglossaries
-\input{src/glosario}
+\loadglsentries{src/glosario}
 
 % Rerefencias
-\addbibresource{biblatex-src/bibliografia.bib}
+\bibliography{src/bibliografia}
 \usepackage{graphicx}
 \usepackage{listings}
 
@@ -111,12 +111,6 @@
 %
 \include{src/resumen}
 
-%
-% Glosario
-%
-\printglossary[title=Glosario,toctitle=Glosario]
-\printglossary[title=Acrónimos,toctitle=Acrónimos,type=\acronymtype]
-
 % Estilo de párrafo de los índices
 \setlength{\parskip}{1pt}
 \renewcommand{\baselinestretch}{1}
@@ -125,7 +119,6 @@
 % Tabla de contenidos
 %
 \tableofcontents
-\listoftables
 \listoffigures
 \cleardoublepage
 
@@ -177,6 +170,12 @@
 %
 \printbibliography[heading=bibintoc]
 
+%
+% Glosario
+%
+
+\printglossary[title=Glosario,toctitle=Glosario]
+
 % No expandir elementos para llenar toda la página
 \raggedbottom
 
@@ -188,9 +187,6 @@
 \addappheadtotoc
 \appendixpage
 
-%
-% TODO: Apéndices del TFG
-%
 \include{src/apendiceEjemplos}
 
 % Fin del documento
