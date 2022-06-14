@@ -1,32 +1,62 @@
 \chapter{Estado del Arte. OncoSimulR\label{sec:estado_del_arte}}
-Hemos visto en el apartado anterior, que la principal motivación de este proyecto es lograr la reproducir la terapia adaptativa durante un proceso de simulación de progresión tumoral. Para ello vamos a trabajar sobre el paquete \textbf{OncoSimulR} \cite{OncoSimulR} de R que implementa un simulador de este tipo.
+Hemos visto en el apartado anterior que la principal motivación de este proyecto es lograr reproducir la terapia adaptativa durante un proceso de simulación de progresión tumoral. Para ello vamos a trabajar sobre el paquete \textbf{OncoSimulR} \cite{OncoSimulR} de R que implementa un simulador de este tipo.
 
-Los simuladores de progresión tumoral son programas que permiten reproducir de forma artificial la evolución de un grupo de células tumorales dadas unas condiciones iniciales concretas. Son de gran interés en el ámbito de la biología pues permiten la obtención de una gran cantidad de datos acerca de la evolución modelos tumorales cuyo estudio siguiendo la via teórica y matemática es excesivamente complejo. Permiten también en algunos casos (como es el caso de \textbf{OncoSimulR}) emular los efectos que tendrían ciertos tratamientos o variaciones en las condiciones externas en la progresión de dichos \glspl{tumor}.
+Los simuladores de progresión tumoral son programas que permiten reproducir de forma artificial la evolución de un grupo de células tumorales dadas unas condiciones iniciales concretas. Son de gran interés en el ámbito de la biología pues permiten la obtención de una gran cantidad de datos acerca de la evolución de modelos tumorales excesivamente complejos para su análisis matemático. Permiten también en algunos casos (como es el caso de \textbf{OncoSimulR}) emular los efectos que tendrían ciertos tratamientos o variaciones en las condiciones externas en la progresión de dichos \glspl{tumor}.
 
-Dentro de los simuladores disponibles encontramos \textbf{OncoSimulR}, un paquete de R incluido dentro del proyecto Bioconductor\cite{Bioconductor}, que fomenta el desarrollo de software de código abierto para el análisis de estudios biológicos. \textbf{OncoSimulR} ha sido desarrollado por Ramón Díaz Uriarte, Profesor Titular del Dpto. de Bioquímica de la Universidad Autónoma de Madrid, con el fin de simular la evolución de conjuntos de células tumorales con reprodución asexual, aunque actualmente, esta funcionalidad se ha extendido permitiendo simulaciones mucho más complejas, emulando modelos casi arbitrarios. Además, en una de las ramas más recientes, logra reproducir los efectos de ciertos tratamientos para evaluar su efectividad en la ralentización del avance del \gls{tumor}.
+Dentro de los simuladores disponibles encontramos \textbf{OncoSimulR}, un paquete de R incluido dentro del proyecto BioConductor\cite{Bioconductor}. BioConductor es un proyecto que fomenta el desarrollo de software de código abierto para el análisis de estudios biológicos, fundamentalmente en el área de la bioinformática. \textbf{OncoSimulR} ha sido desarrollado por Ramón Díaz Uriarte, Profesor Titular del Dpto. de Bioquímica de la Universidad Autónoma de Madrid, con el fin de simular la evolución de conjuntos de células tumorales con reprodución asexual, aunque actualmente esta funcionalidad se ha extendido permitiendo simulaciones mucho más complejas, emulando modelos casi arbitrarios. Además, una de las ramas más recientes, permite reproducir los efectos de ciertos tratamientos para evaluar su efectividad en la ralentización del avance del \gls{tumor}.
 
-Este paquete está escrito en los lenguajes R y C++, de este modo, con R se logra una interfaz amigable con el usuario habitual del programa, que suele estar más acostumbrado al tema bioinformático dónde este lenguaje es muy habitual; pero consiguiendo a la vez una buena eficiencia en la ejecución de código a través del lenguaje C++ en el que se implementan los algoritmos base de la simulación, que tienen una mayor complejidad y coste computacional. Actualmente la funcionalidad de \textbf{OncoSimulR} incluye:
+Este paquete está escrito en los lenguajes R y C++. Con R se logra una interfaz amigable en un lenguaje con el que están más familiarizados los usuarios de aplicaciones bioinformáticas. Implementando en C++ los algoritmos de la simulación se consigue una buena eficiencia en la ejecución de código, porque son estos algoritmos los que tienen una mayor complejidad y coste computacional. Actualmente la funcionalidad de \textbf{OncoSimulR} incluye:
 
 \begin{itemize}
-	\item Especificar la adaptabilidad de los genes\Gls{gen} mediante el ``\gls{fitness}'' y las \glspl{tasaNac} y \glspl{tasaDef} con la función \textbf{allFitnessEffects}, en esta función se permite:
+	\item Especificar la adaptabilidad de los \glspl{gen} mediante el ``\gls{fitness}'' (``eficacia biológica'') y las \glspl{tasaNac} y \glspl{tasaDef} con la función \textbf{allFitnessEffects}, en esta función se permite:
 	\begin{itemize}
-		\item Especificar el \gls{fitness} de cada \gls{genotype} de forma explícita siguiendo los modelos de \textbf{Bozic}\cite{Bozic} (\gls{tasaDef} fija y el \gls{fitness} define el nacimiento), de \textbf{McFarland}\cite{McFarland}, o exponencial (ambos con una \gls{tasaNac} fija y el \gls{fitness} determina la muerte).
-		\item Definir un \gls{fitness} variable para los \glspl{genotype}  en función de la frecuencia de estos, es decir, según la cantidad de población (frecuencia absoluta), o la proporción frecuencia relativa) de cada \gls{genotype} que haya presente en el conjunto de células simulado.
-		\item Asignar de forma explícita de tanto \gls{tasaNac} como \gls{tasaDef}, sin seguir por tanto los modelos de Bozic y McFarland (En una de las ramas con funcionalidad más avanzada que la principal, explicada en 2.2.1)
-		\item Determinar la existencia o no de \gls{epistasis} entre los \glspl{gen}, es decir, si la presencia de un determinado \gls{gen} mutado favorece a otro, de este modo, el \gls{fitness} de una célula con un determinado \gls{gen} mutado aumentará si muta otro \gls{gen} con el que tiene \gls{epistasis} .
-		\item Especificar variaciones en el \gls{fitness} en función del orden de mutación de los \glspl{gen}, es decir, permitir que un \gls{genotype} con 2 \glspl{gen} A y B mutados tenga \gls{fitness} distintos si el \gls{gen} A ha mutado primero, o lo ha hecho el \glspl{gen} B.
+		\item Especificar el \gls{fitness} de cada \gls{genotype} siguiendo los siguientes modelos\footnote{Se permite también el modelo de Bozic\cite{Bozic} un antiguo modelo, que ya no se emplea, en el que la tasa de nacimiento es 1 y la de muerte se especifica por el usuario en función del genotipo}: \\
+		\begin{table}[h]
+			\begin{tabular}{|c||c|c|}
+				\hline
+				\textbf{Modelo} & \textbf{Tasa de Nacimiento} & \textbf{Tasa de Muerte} \\ \hline
+				Exponencial & Definido por usuario & 1\\ \hline
+				McFarland\cite{McFarland} & Definido por el usuario & Proporcional a la población (hay competencia)\\ \hline
+			\end{tabular}
+			\caption{Modelos evolutivos OncoSimulR}
+			\label{tab:modelos}
+		\end{table}
+		\item De igual modo, se puede decidir no emplear estos modelos y asignar de forma explícita tanto la \gls{tasaNac} como la \gls{tasaDef} (En una de las ramas con funcionalidad más avanzada que la principal, explicada en 2.2.1)\cite{Alberto}
+		\item Para especificar estos valores de fitness se pueden emplear distintas estrategias:
+		\begin{itemize}
+			\item Definir un \gls{fitness} variable para los \glspl{genotype}  en función de la frecuencia de estos, es decir, según la cantidad de población (frecuencia absoluta), o la proporción frecuencia relativa) de cada \gls{genotype} que haya presente en el conjunto de células simulado.
+			\item Determinar la existencia o no de \gls{epistasis} entre los \glspl{gen}, es decir, si la presencia de un determinado \gls{gen} mutado favorece a otro, de este modo, el \gls{fitness} de una célula con un determinado \gls{gen} mutado aumentará si muta otro \gls{gen} con el que tiene \gls{epistasis}.
+			\item Especificar los valores del fitness o de las tasas de nacimiento y muerte de forma explícita introduciendo directamente sus valores.
+			\item Especificar variaciones en el \gls{fitness} en función del orden de mutación de los \glspl{gen}, es decir, permitir que un \gls{genotype} con 2 \glspl{gen} A y B mutados tenga \gls{fitness} distintos si el \gls{gen} A ha mutado primero, o lo ha hecho el \glspl{gen} B. Esto se realiza mediante un DAG (grafo dirigido acíclico).
+		\end{itemize}
 	 \end{itemize}
 	\item Emplear este \gls{fitness} para la simulación de la progresión tumoral, definiendo para esta además del \gls{fitness}, las \glspl{tasaMut} iniciales, la población inicial y la presencia o no de \glspl{gen} ya mutados desde el inicio de la simulación. Esto se realiza mediante la función \textbf{OncoSimulIndiv}. Para realizar esta simulación el programa emplea el modelo \textbf{BNB de Mather et al}\cite{Mather} que se explicará en el punto 2.1.
-	\item Emular los efectos de ciertos tratamientos o modificaciones en las condiciones externas en la evoluciñon del \gls{tumor}. Esto se hace mediante la funcionalidad de ``intervenciones'' implementada en otra de las ramas confuncionalidad extra sobre la rama principal, esta se explicará con más detalle en el punto 2.2.2.
+	\item Emular los efectos de ciertos tratamientos o modificaciones en las condiciones externas en la evolución del \gls{tumor}. Esto se hace mediante la funcionalidad de ``intervenciones'' implementada en otra de las ramas con funcionalidad extra sobre la rama principal; esta se explicará con más detalle en el punto 2.2.2.
 	\item Mostrar mediante gráficos la evolución de prácticamente todos los datos de la simulación.
 	\item Ejecución de varias simulaciones al mismo tiempo, permitiendo además la paralelización de estas simulaciones. Para ello se emplean las funciones \textbf{OncoSimulPop} y \textbf{OncoSimulSample}.
 \end{itemize}
 
-Toda esta funcionalidad permite una gran adaptabilidad al programa, haciéndolo muy útil para la simulación de escenarios muy complejos y enrevesados al permitir la especificación de froma prácticamente arbitraria de todas las condiciones de partida de la simulación.
- 
-\section{Algoritmo BNB de Mather et al}
+Toda esta funcionalidad permite una gran adaptabilidad al programa, haciéndolo muy útil para la simulación de escenarios muy complejos y sofisticados al permitir la especificación de forma prácticamente arbitraria de todas las condiciones de partida de la simulación. Pero aún falta la posibilidad de intervenir en las simulaciones arbitrariamente durante la ejecución para simular escenarios como la terapia adaptativa. Es en esto en lo que se centrará este trabajo.
 
-Como hemos comentado en el apartado anterior, \textbf{OncoSimulR} emplea el algoritmo \textbf{BNB de Mather et al}\cite{Mather} para la simulación de la progresión tumoral. Este es un algoritmo de simulación basado en el uso de distribuciones binomiales y binomiales negativas para la actualización de las poblaciones. El algoritmo actúa de acuerdo a los siguientes pasos:
+Este tema se ilustra de forma muy detallada en los artículos de Hansen\cite{Hansen1}\cite{Hansen2}. En estos papers se plantean numerosos escenarios que hasta ahora no eran simulables en OncoSimulR:
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=10cm]{imagenes/adapt}
+	\caption{Ilustración del funcionamiento terapia adaptativa}
+	\label{fig:adapt}
+\end{figure}
+
+En esta ilustración vemos los casos \textbf{a} y \textbf{b}, sin terapia adaptativa, que serían simulables actualmente en \textbf{OncoSimulR}. El primero consistiría en simular un tratamiento continuo que, en esta situación ideal, sería efectivo contra todas las células del tumor. El segundo ilustra el mismo caso, pero esta vez hay células en el tumor resistentes a este tratamiento (esto se simularía en \textbf{OncoSimulR} mediante una intervención que solo afectase a un genotipo), en este caso vemos que las células resistentes aumentan notablemente el tamaño del tumor a pesar del tratamiento. Por último encontramos el caso \textbf{c} que ilustra un caso de terapia adaptativa, donde se monitoriza el avance del tumor y se aplica el tratamiento en momento seleccionados para lograr mantener constante el tamaño del tumor y balanceada la población de ambos genotipos. Es de gran importancia mantener estas poblaciones balanceadas para garantizar la competencia celular que, como nos explica Hansen\cite{Hansen1}\cite{Hansen2} en sus artículos, garantiza que la población resistente al tratamiento no se dispare, al tener que competir por los recursos con las células no resistentes, de este modo se logra mantener la población total controlada.
+Este último escenario no era simulable hasta ahora en \textbf{OncoSimulR}, al no poderse modificar las intervenciones en función del desarrollo de la simulación, para asegurar no eliminar completamente el genotipo sensible y garantizar la competitividad celular.
+
+Existen además casos más complejos de terapia adaptativa, dónde se varía el tratamiento en función del estado del tumor, aplicando algunos más o menos agresivos según sea necesario. El objetivo del trabajo es por tanto lograr la simulación en \textbf{OncoSimulR} de los escenarios de la terapia adaptativa.
+
+
+ 
+\section{Algoritmo BNB de Mather et al TODO}
+
+Como hemos comentado en el apartado anterior, \textbf{OncoSimulR} emplea el algoritmo \textbf{BNB de Mather et al}\cite{Mather} para la simulación de la progresión tumoral. Este es un algoritmo de simulación basado en el uso de distribuciones binomiales y binomiales negativas para la actualización de las poblaciones. Es una modificación del algoritmo de Gibson a Bruck\cite{Gibson} que a su vez modifica el de Gillespie\cite{Gillespie} El algoritmo actúa de acuerdo a los siguientes pasos:
 \begin{enumerate}
 	\item Inicializamos un número $N$ de clases (en nuestro caso \glspl{genotype}) en el tiempo inicial de la simulación $t = 0$. Para cada \gls{genotype} definimos una población incial $n_i$ con $i = 1, ..., N$ y unas \glspl{tasaNac}, \gls{mut} y muerte ($gi$, $\gamma i$ y $\mu i$ respectivamente.
 	\item Para cada clase (\gls{genotype}) generamos $N$ números aleatorios $r_i$ entre 0 y 1 siguiendo una distribución uniforme.
@@ -60,6 +90,8 @@ Dónde, al igual que antes, $\widetilde{NB}(a,b)$ representa una binomial negati
 
 La condición de parada puede definirse de diversos modos, con una población máxima o mínima, con un tiempo máximo o con una \gls{mut} específica. En el caso de \textbf{OncoSimulR}, la condición de parada empleada es un tiempo final.
 
+
+
 \section{Ramas con versiones divergentes}
 
 Además de la funcionalidad básica de simulación que proporciona el algoritmo \textbf{BNB de Mather et al} explicado, \textbf{OncoSimulR} permite simulaciones más complejas mediante la adición de otra funcionalidad a este algoritmo. Algunos ejemplos de esto son la gran libertad para la definición de las \glspl{tasaNac} y \glspl{tasaDef}, o la posibilidad de simular el resultado de ciertos tratamientos, como se ha mencionado brevemente con anterioridad.
@@ -67,49 +99,47 @@ Además de la funcionalidad básica de simulación que proporciona el algoritmo 
 Estas funcionalidades, al ser muy recientes y haberse desarrollado simultáneamente, se encuentran, al inicio de este trabajo, en dos ramas diferentes del programa, cada una implementando una de las dos posibilidades, que deben ser unificadas para proseguir con la nueva funcionalidad, pues se basa en parte en lo implementado en estas.
 Procederemos ahora a explicar brevemente las peculiaridades y funcionalidad concreta de estas dos ramas.
 
-\subsection{Birth y death rate\cite{Alberto}}
-En esta rama se implementa la funcionalidad que permite definir de forma manual y arbitraria las \glspl{tasaNac} y muerte. La funcionalidad anterior a esta rama tan solo permitía la definición de un único parámetro ``\gls{fitness}'', que representaba la \gls{tasaNac} (en el modelo de \textbf{Bozic}) o la \gls{tasaDef} (en los modelos \textbf{Exponencial} y de \textbf{McFarland}), pero no se podían definir ambos de forma manual al mismo tiempo.
+\subsection{Birth y death rate}
+En esta rama\cite{Alberto} se implementa la funcionalidad que permite definir de forma manual y arbitraria las \glspl{tasaNac} y muerte. La funcionalidad anterior a esta rama tan solo permitía la definición de un único parámetro ``\gls{fitness}'', que representaba la \gls{tasaDef} (en el modelo de \textbf{Bozic}) o la \gls{tasaNac} (en los modelos \textbf{Exponencial} y de \textbf{McFarland}), pero no se podían definir ambos de forma manual al mismo tiempo.
 Para incluir esto, esta rama contiene numerosos cambios en funciones básicas del algoritmo de simulación, que incluyen:
 \begin{itemize}
 	\item \textbf{allFitnesEffects}: esta función es la que permite al usuario definir el \gls{fitness} de los \glspl{genotype}, por tanto, en esta rama, contiene cambios que permiten definir no solo un parámetro para cada \gls{genotype} (que antes era el \gls{fitness}), sino dos, correspondientes a las \glspl{tasaNac} y muerte respectivamente.
 	\item \textbf{evalAllGenotypes}: esta función se emplea para obtener los valores del \gls{fitness} de todos los \glspl{genotype}, por tanto en esta rama, implementa cambios para devolver dos valores para cada \gls{genotype} (correspondientes a las \glspl{tasaNac} y muerte) en lugar de uno solo, como previamente. Para ello incluye cambios además en otras funciones internas que gestionan el almacenamiento de los datos en las estructuras de C++.
-	\item \textbf{OncoSimulIndiv}: la función principal de simulación se ve también afectada, pues debe permitir la simulación mediante un modelo distinto a los de \textbf{Bozic} y \textbf{McFarland} que ya se permitían, pues estos no necesitan definir ambas tasas. Por tanto se modifica esta función para introducir un nuevo modelo de simulación ``Arb'' (arbitrario) que permite introducir ambos valores.
+	\item \textbf{OncoSimulIndiv}: la función principal de simulación se ve también afectada, pues debe permitir la simulación mediante un modelo distinto a los de \textbf{Bozic}, Exponencial y \textbf{McFarland} que ya se permitían, pues estos no necesitan definir ambas tasas. Por tanto se modifica esta función para introducir un nuevo modelo de simulación ``Arb'' (arbitrario) que permite introducir ambos valores.
 \end{itemize}
 Además, la rama incluye también modificaciones en numerosas estructuras en C++, especialmente en
 \begin{itemize}
-	\item \textbf{fitnessLandscape\_struct}: estructura que mapea los \glspl{genotype} a su \gls{fitness}, o, en esta rama, tanto a su \gls{tasaNac} como de muerte.
+	\item \textbf{fitnessLandscape\_struct}: estructura que mapea los \glspl{genotype} a su \gls{fitness} o, en esta rama, tanto a su \gls{tasaNac} como de muerte.
 	\item \textbf{fitnessEffectsAll}: estructura que contiene todos los datos para manejo del \gls{fitness}, ahora debe incluir datos tanto para la \gls{tasaNac} como de muerte.
-	\item \textbf{spParamsP}: clase que almacena los datos de cada \gls{genotype}, \gls{tasaMut}, \gls{fitness}, población, etc. En esta rama en lugar del \gls{fitness} incuye datos sobre la \gls{tasaNac} y de muerte.
+	\item \textbf{spParamsP}: clase que almacena los datos de cada \gls{genotype}, \gls{tasaMut}, \gls{fitness}, población, etc. En esta rama en lugar del \gls{fitness} se incuyen por separado datos sobre las \glspl{tasaNac} y de muerte.
 \end{itemize}
 Al modificarse estas estructuras, se introducen también ligeros cambios en todas las funciones que las emplean, que deben también tenerse en cuenta.
 
-\subsection{Intervenciones\cite{Javier}}
-La funcionalidad correspondiente a la simulación de tratamientos mediante lo que en la aplicación \textbf{OncoSimulR} se llaman ``intervenciones'' está implementada en otra rama separada. En ella se permite definir ciertos cambios en la población o el \gls{fitness} de uno o varios \glspl{genotype}, que se llevarán a cambo cuando se cumpla una determinada condición o ``trigger''. De este modo se puede emular el efecto que tendrían algunos tratamientos o intervenciones quirúrgicas en el desarrollo del \gls{tumor}.
-
-Esta funcionalidad se va a explicar de forma más detallada pues es la base sobre la que se implementarán los cambios para lograr simular la terapia adaptativa mencionada en el punto 1.1.
+\subsection{Intervenciones}
+La funcionalidad correspondiente a la simulación de tratamientos mediante lo que en la aplicación \textbf{OncoSimulR} se llaman ``intervenciones'' está implementada en otra rama separada\cite{Javier}. En ella se permite definir ciertos cambios en la población o el \gls{fitness} de uno o varios \glspl{genotype}, que se llevarán a cambo cuando se cumpla una determinada condición o ``trigger''. De este modo se puede emular el efecto que tendrían algunos tratamientos o intervenciones quirúrgicas en el desarrollo del \gls{tumor}.
 
 Las ``intervenciónes'' están definidas por los siguientes parámetros:
 \begin{itemize}
-	\item \textbf{ID}: identificador de la intervención que la diferencia de las otras.
+	\item \textbf{ID}: identificador de una intervención que la diferencia de otras intervenciones.
 	\item \textbf{Trigger}: expresión booleana que determina la condición que debe cumplirse en la simulación para que la intervención se lleve a cabo.
-	\item \textbf{WhatHappens}: expresión que determina el cambio que se produce al ejecutarse la intervención. Puede ser un cambio en la población total, en la de uno o varios \glspl{genotype}, o una variación en el \gls{fitness} de alguno de ellos.
+	\item \textbf{WhatHappens}: expresión que determina el cambio que se produce al ejecutarse la intervención. Puede ser un cambio en la población total, en el tamaño de población de uno o varios \glspl{genotype}, o una variación en el \gls{fitness} de alguno de ellos.
 	\item \textbf{Periodicidad}: tiempo mínimo que debe pasar antes de que la misma intervención pueda ejecutarse de nuevo en caso de que esta se deba llevar a cabo varias veces.
 	\item \textbf{Repeticiones}: número máximo de veces que puede ejecutarse la intervención a lo largo de la simulación.
 \end{itemize}
 
-Partiendo de esta definición, en la rama se implementa un algoritmo en la función \textbf{executeInterventions} del fichero \textbf{interventions.cpp} que controla la ejecuciónd e las intervenciones mediante el proceso:
-\begin{enumerate}
-	\item para cada intervención
-	\begin{enumerate}
+Partiendo de esta definición, en la rama se implementa un algoritmo en la función \textbf{executeInterventions} del fichero \textbf{interventions.cpp} que controla la ejecución de las intervenciones mediante el proceso:
+\begin{itemize}
+	\item Para cada intervención: 
+	\begin{itemize}
 		\item Si se cumple el \textbf{Trigger}:
-		\begin{enumerate}
-			\item Si ha pasado el tiempo mínimo de \textbf{Periodicidad} y quedan \textbf{Repeticiones} para la intervencion:
-				\begin{enumerate}
-					\item Se ejecutan los cambios definidios en \textbf{WhatHappens}.
-				\end{enumerate}
-		\end{enumerate}
-	\end{enumerate}
-\end{enumerate}
+		\begin{itemize}
+			\item Si ha pasado el tiempo mínimo de \textbf{Periodicidad} y quedan \textbf{Repeticiones} para la intervención:
+				\begin{itemize}
+					\item Se ejecutan los cambios definidos en \textbf{WhatHappens}.
+				\end{itemize}
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
 
 Este algoritmo luego se inserta en el flujo principal de código de la simulación, para que en cada ciclo de esta se compruebe si se deben ejecutar y en caso afirmativo se lleven a cabo.
 
@@ -136,10 +166,10 @@ El usuario definirá las intervenciones en R mediante una lista con todas las in
 		)   
    	)
 \end{R}
+En este ejemplo hemos definido dos intervenciones. En la primera cuando la población del genotipo B llega a 5 (como indica el ``Trigger''), se reduce la población del genotipo A al 10\% de su población anterior (como muestra el ``WhatHappens''). En la segunda, cuando la población de A llega a 5, y han pasado más de 4 segundos de simulación, se reduce la población de A al 40\% de su población anterior.
 
 De igual modo, se incluye también en la rama la definición de varias estructuras en C++ para almacenar los datos correspondientes a estas intervenciones, estas estructuras son \textbf{Interventions} que contiene los datos de cada intervención, e \textbf{InterventionsInfo} que contiene los datos para gestionar el conjunto de intervenciones definidas para una simulación. Ambas estructuras están definidas en \textbf{interventions.h}
 
 Por último, esta rama contiene también modificaciones ligeras en la función principal de simulación \textbf{OncoSimulIndiv} y muchas de sus sus sub-funciones tanto en R como en C++ para que estas tomen el argumento \textbf{interventions} de forma adecuada.
-
 
 
