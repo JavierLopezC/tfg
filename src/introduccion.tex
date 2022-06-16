@@ -1,6 +1,6 @@
-\chapter{Introducción}
+\chapter{Introducción}\label{1}
 
-\section{Motivación}
+\section{Motivación}\label{1.1}
 
 El \gls{cancer}\cite{Cancer} es una de las enfermedades más comunes y preocupantes en la actualidad. En el año 2020, supuso en España la segunda causa de muerte más común, después de las enfermedades circulatorias y por encima de las infecciosas (que incluyen los casos de la pandemia de Covid-19)\cite{Deaths}. Estos datos explican que el interés por la enfermedad así como los esfuerzos en su investigación hayan ido en aumento durante los últimos años.
 
@@ -12,29 +12,29 @@ Es notoria, por tanto, la importancia de disponer de mecanismos para ``predecir'
 
 Entre estos simuladores, destaca la herramienta \textbf{OncoSimulR}\cite{OncoSimulR}, sobre la que se va a enfocar este trabajo. Esta herramienta implementa, además de la funcionalidad base para simular la progresión tumoral, funcionalidad extra, como la capacidad de emular los efectos de algunos tratamientos, o la posibilidad de especificar el \gls{fitness} de los distintos \glspl{genotype} celulares siguiendo una gran variedad de estrategias, permitiendo simulaciones tremendamente complejas y específicas. Sin embargo, esta herramienta no permite aún la simulación de terapia adaptativa, es en esta funcionalidad en la que se centrará principalmente este trabajo.
 
-\section{Objetivos}
+\section{Objetivos}\label{1.2}
 
-Como hemos comentado en el apartado anterior, el principal objetivo de este trabajo es lograr que el programa \textbf{OncoSimulR} pueda simular de forma efectiva los efectos de la terapia adaptativa en la evolución de un \gls{tumor}. Es decir, se debe permitir que las intervenciones que ya se pueden definir en este programa, puedan variar en función del estado en el que se encuentra el \gls{tumor} a lo largo de la simulación. Para ello, se deben llevar a cabo distintas acciones que vamos a desglosar en subobjetivos específicos:
+Como hemos comentado en el apartado anterior \ref{1.1}, el principal objetivo de este trabajo es lograr que el programa \textbf{OncoSimulR} pueda simular de forma efectiva los efectos de la terapia adaptativa en la evolución de un \gls{tumor}. Es decir, se debe permitir que las intervenciones que ya se pueden definir en este programa, puedan variar en función del estado en el que se encuentra el \gls{tumor} a lo largo de la simulación. Para ello, se deben llevar a cabo distintas acciones que vamos a desglosar en subobjetivos específicos:
 
 \begin{itemize}
 	\item Familiarizarse con la herramienta OncoSimulR en el estado en que se encuentra previamente al inicio del trabajo (especialmente el flujo general de código de la simulación y el funcionamiento de las intervenciones, que son los aspectos más relacionados con la funcionalidad que se quiere implementar).
 	\item Aprender sobre R y C++, ya que son dos lenguajes con los que no estoy totalmente familiarizado al inicio de este trabajo.
 	\item Completar la unificación de las ramas anteriores solucionando todos los errores que aparezcan durante el proceso.
-	\item Añadir la posibilidad de definir variables de usuario arbitrariamente complejas (que sean función de los parámetros de la simulación tales como población total, subpoblaciones de los \glspl{genotype}, \gls{fitness}, etc) tanto como salida en sí mismas, como para emplearse en las intervenciones. Este será el mecanismo principal que permitirá la implementación de la terapia adaptativa, como veremos en el apartado 3.
+	\item Añadir la posibilidad de definir variables de usuario arbitrariamente complejas (que sean función de los parámetros de la simulación tales como población total, subpoblaciones de los \glspl{genotype}, \gls{fitness}, etc) tanto como salida en sí mismas, como para emplearse en las intervenciones. Este será el mecanismo principal que permitirá la implementación de la terapia adaptativa, como veremos en el apartado \ref{3}.
 	\item Insertar la funcionalidad de las variables de usuario en el flujo general de código de la simulación.
 	\item Permitir que las intervenciones empleen estas nuevas variables de usuario. Esto es lo que haría posible simular la terapia adaptativa.
 	\item Generar una batería de pruebas extensa para comprobar el correcto funcionamiento de las variables de usuario y las intervenciones que las emplean.
 \end{itemize}
 
-\section{Estructura del documento}
+\section{Estructura del documento}\label{1.3}
 
 A lo largo de este documento se explicará en detalle todo el trabajo llevado a cabo para lograr los objetivos definidos en el punto anterior. Debido a la extensión de este, se dividirá la memoria en diversos apartados:
 \begin{itemize}
-	\item En primer lugar analizaremos el estado del arte, centrándonos en el punto en que se encuentra previamente a este trabajo la herramienta \textbf{OncoSimulR}, su funcionalidad disponible y el funcionamiento del algoritmo de simulación que implementa, así como el análisis detallado de las dos ramas con funcionalidad recientemente implementada que deberán unificarse.
-	\item A continuación, en el apartado de diseño, veremos la estrategia definida para alcanzar la funcionalidad deseada en el programa, y como se ha planificado cada paso que se ha de llevar a cabo para lograrlo.
-	\item Posteriormente, en el apartado de implementación, abordaremos el proceso de modificación del código del programa llevado a cabo para implementar los cambios definidos en el apartado de diseño. Este apartado incluye en detalle el proceso de unificación de ramas divergentes que se debió realizar previamente a la implementación de la nueva funcionalidad, que fue un proceso bastante más complejo de lo esperado incialmente.
-	\item Seguidamente, en el apartado de pruebas y resultados, explicaremos los tests llevados a cabo para asegurar el correcto funcionamiento de lo implementado, e ilustraremos la nueva funcionalidad con una serie de ejemplos de ejecución con sus correspondientes resultados.
-	\item Por último, extraeremos unas breves conclusiones acerca del proyecto, y analizaremos las posibles líneas de trabajo futuro para extender aún más esta funcionalidad.
+	\item En primer lugar, en \ref{2} analizaremos el estado del arte, centrándonos en el punto en que se encuentra previamente a este trabajo la herramienta \textbf{OncoSimulR}\cite{OncoSimulR}, su funcionalidad disponible y el funcionamiento del algoritmo de simulación que implementa, así como el análisis detallado de las dos ramas con funcionalidad recientemente implementada que deberán unificarse.
+	\item A continuación, en el apartado de diseño \ref{3}, veremos la estrategia definida para alcanzar la funcionalidad deseada en el programa, y como se ha planificado cada paso que se ha de llevar a cabo para lograrlo.
+	\item Posteriormente, en el apartado de implementación \ref{4}, abordaremos el proceso de modificación del código del programa llevado a cabo para implementar los cambios definidos en el apartado de diseño. Este apartado incluye en detalle el proceso de unificación de ramas divergentes \ref{4.2} que se debió realizar previamente a la implementación de la nueva funcionalidad, que fue un proceso bastante más complejo de lo esperado inicialmente.
+	\item Seguidamente, en el apartado de pruebas y resultados \ref{5}, explicaremos los tests llevados a cabo para asegurar el correcto funcionamiento de lo implementado, e ilustraremos la nueva funcionalidad con una serie de ejemplos de ejecución con sus correspondientes resultados.
+	\item Por último, en el apartado \ref{6} extraeremos unas breves conclusiones acerca del proyecto, y analizaremos las posibles líneas de trabajo futuro para extender aún más esta funcionalidad.
 \end{itemize}
 
 Cabe destacar que, si bien una de las partes más complejas del trabajo ha sido la unificación de las ramas anteriores, debido a los problemas surgidos de esta, este tema no aparece reflejado en el apartado de diseño, puesto que no ha tenido una parte extensa de planificación, ya que no se tenía previsto que fuese a ser una tarea tan compleja como acabó siendo. Por tanto este tema se tratará directamente en el apartado de implementación, explicando de forma detallada los problemas detectados y cómo se han solucionado.

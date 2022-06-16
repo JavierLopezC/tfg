@@ -1,30 +1,31 @@
-\chapter{Pruebas y Resultados\label{sec:resultados}}
+\chapter{Pruebas y Resultados\label{sec:resultados}}\label{5}
 
-\section{Comprobación de funcionalidad previa}
+\section{Comprobación de funcionalidad previa}\label{5.1}
 
-Antes de proceder a introducir toda la nueva funcionalidad explicada a partir del punto 4.4, y tras realizar la unificación de las dos ramas de las que se partía y la solución de los problemas de optimización explicados en 4.3, aseguramos que la funcionalidad anterior no se ha visto afectada mediante el uso de la batería de tests ya disponibles para el programa \textbf{OncoSimulR}. Esta batería de tests incluye por una lado unos tests manuales muy extensos y costosos computacionalmente, y otro grupo de tests que comprueban la funcionalidad básica del programa mediante el paquete \textbf{testthat}\cite{Testthat} del lenguaje R. Al ejecutar estos tests se detectaron una serie de errores previos al merge en una de las ramas. Los errores detectados están localizados en los tests de la funcionalidad de intervenciones, y son errores en los propios tests y no fallos de funcionalidad. Para solucionar estos errores:
+Antes de proceder a introducir toda la nueva funcionalidad explicada a partir del punto \ref{4.4}, y tras realizar la unificación de las dos ramas de las que se partía y la solución de los problemas de optimización explicados en \ref{4.3}, aseguramos que la funcionalidad anterior no se ha visto afectada mediante el uso de la batería de tests ya disponibles para el programa \textbf{OncoSimulR}\cite{OncoSimulR}. Esta batería de tests incluye por una lado unos tests manuales muy extensos y costosos computacionalmente\footnote{\url{https://github.com/JavierLopezC/OncoSimul/tree/adaptive-ther/OncoSimulR/tests/manual}}, y otro grupo de tests que comprueban la funcionalidad básica del programa mediante el paquete \textbf{testthat}\cite{Testthat} del lenguaje R\footnote{\url{https://github.com/JavierLopezC/OncoSimul/tree/adaptive-ther/OncoSimulR/tests/testthat}}. Al ejecutar estos tests se detectaron una serie de errores previos al merge en una de las ramas. Los errores detectados están localizados en los tests de la funcionalidad de intervenciones, y son errores en los propios tests y no fallos de funcionalidad. Para solucionar estos errores:
 
 \begin{itemize}
 		\item Se modifica la salida del algoritmo de simulación BNB implementado en la función \textbf{nr\_BNB\_Algo5} para que incluya una lista con los tiempos de la simulación en los que se ejecutan intervenciones (esto nos permite buscar los puntos exactos donde se realizan las intervenciones en los tests). De este modo la salida de la función principal de simulación \textbf{OncoSimulIndiv} ahora incluye el campo \textbf{x\$other\$interventionTimes} con estos tiempos (donde ``x'' es la variable donde se almacena la salida de la función).
 		\item Adelantamos el punto de ejecución de las intervenciones en el flujo principal del código de la simulación para que se realicen antes de rellenar las estructuras de salida. Con esto conseguimos que al actualizarse las poblaciones y \glspl{tasaNac} y muerte al final de cada ciclo de simulación, estas incluyan los cambios realizados por las intervenciones. Antes de esta modificación, los cambios que realizaban las intervenciones no se veían reflejados en las poblaciones mostradas a la salida hasta el tiempo correspondiente a la siguiente iteración de la simulación, lo que generaba un desfase entre lo que se testeaba (que emplea los datos de salida) y las poblacioes internas empleadas en la simulación (que sí incluían los cambios realizados por las intervenciones).
 		\item Comentar la comprobación de totPopSize != totalPop en reduceTotalPopulation (interventions.cpp) porque al haberlo adelantado totPopSize no está actualizado.
-		\item Añadimos un fragmento de código para eliminar los \glspl{genotype} con población cero después de realizar intervenciones. Las poblaciones de tamaño 0 se deben eliminar de las tablas pues estas solo contienen poblaciones existentes. 
+		\item Añadimos un fragmento de código para eliminar los \glspl{genotype} con población cero después de realizar intervenciones. Las poblaciones de tamaño cero se deben eliminar de las tablas pues estas solo contienen poblaciones existentes. 
 		\item Modificamos los tests ya existentes de intervenciones para adaptarlos a estos nuevos cambios y comprobamos que todos los tests se pasan correctamente. Estas modificaciones consisten principalmente en hacer que se empleen los tiempos almacenados en \textbf{x\$other\$interventionTimes} para buscar los puntos en los que se realizan intervenciones y comprobar que estas son correctas, en lugar de buscarlas recorriendo la estructura de salida con las poblaciones en cada unidad de tiempo, pues este método no permitía un testeo correcto además de ser mucho menos eficiente.
 \end{itemize}
 
-Por último, tras implementar toda la nueva funcionalidad (explicada a partir del punto 4.4) volvemos a ejecutar toda la batería de tests  para asegurar, de nuevo, que estos cambios no han afectado al correcto funcionamiento de la funcionalidad previa. Nótese que cada vez que se ejcuta el comando ``R CMD check'' se ejcutan todos los tests de la herramienta \textbf{Testthat}\cite{Testthat}, siendo la forma habitual de operar ejecutar en orden:
+Por último, tras implementar toda la nueva funcionalidad (explicada a partir del punto \ref{4.4}) volvemos a ejecutar toda la batería de tests  para asegurar, de nuevo, que estos cambios no han afectado al correcto funcionamiento de la funcionalidad previa. Nótese que cada vez que se ejcuta el comando ``R CMD check'' se ejcutan todos los tests de la herramienta \textbf{Testthat}\cite{Testthat}, siendo la forma habitual de operar ejecutar en orden:
 \begin{enumerate}
 	\item R CMD build
 	\item R CMD check
 \end{enumerate}
 
-\section{Tests de nueva funcionalidad}
+\section{Tests de nueva funcionalidad}\label{5.2}
 
-Para probar el correcto funcionamiento de la nueva funcionalidad implementada que incluye la creación de variables de usuario y su actualización, así como la simulación de la terapia adaptativa mediante la inclusión de estas variables en las intervenciones, se ha ampliado la batería de tests del programa. En concreto los tests que emplean la herramienta \textbf{testthat}\cite{Testthat} incluyendo un nuevo documento de tests \textbf{test.user\_var.R} que prueba la funcionalidad de las variables de usuario, y se ha ampliado el documento de tests \textbf{test.intervention.R} que incluye los tests sobre intervenciones, para añadir los casos en que estas dependen de los valores contenidos en variables de usuario. Ambos ficheros están incluidos en el directorio \textbf{tests/testthat} del repositorio\footnote{https://github.com/JavierLopezC/OncoSimul/tree/adaptive-ther/OncoSimulR/tests/testthat}. Existe también un fichero \textbf{test.user\_var.R} en la carpeta \textbf{tests/manual} con algunos tests más costosos computacionalmente, que se deben ejecutar por tanto de forma manual. TODO:manual
-Además de los tests, se ha elaborado también la documentación de las funciones más relevantes (ver apéndice B) y se han ampliado las viñetas del programa con ejemplos ilustrativos de la nueva funcionalidad (ver apéndice A).
-\subsection{Variables de usuario}
+Para probar el correcto funcionamiento de la nueva funcionalidad implementada que incluye la creación de variables de usuario y su actualización, así como la simulación de la terapia adaptativa mediante la inclusión de estas variables en las intervenciones, se ha ampliado la batería de tests del programa. Se han añadido tanto tests que emplean la herramienta \textbf{testthat}\cite{Testthat} incluyendo un nuevo documento de tests \textbf{testthat\textbackslash test.user\_var.R}, y los tests manuales añadiendo el fichero \textbf{manual\textbackslash user\_vars\textbackslash test.user\_var.R} que, en conjunto, prueban la funcionalidad de las variables de usuario. Se ha ampliado también el documento de tests \textbf{testthat\textbackslash test.intervention.R} que incluye los tests sobre intervenciones, para añadir los casos en que estas dependen de los valores contenidos en variables de usuario. Todos estos están incluidos en el directorio \textbf{tests}\footnote{\url{https://github.com/JavierLopezC/OncoSimul/tree/adaptive-ther/OncoSimulR/tests}}. 
 
-Cómo hemos comentado, los tests que comprueban el correcto funcionamiento de las variables de usuario están contenidos en el fichero \textbf{test.user\_var.R}. Estos tests contienen las siguientes comprobaciones:
+Además de los tests, se ha elaborado también la documentación de las funciones más relevantes (ver apéndice \ref{B}) y se han ampliado las viñetas del programa con ejemplos ilustrativos de la nueva funcionalidad (ver apéndice \ref{A}).
+\subsection{Variables de usuario}\label{5.2.1}
+
+Cómo hemos comentado, los tests que comprueban el correcto funcionamiento de las variables de usuario están contenidos en los ficheros \textbf{test.user\_var.R} de las carpetas \textbf{tests\textbackslash testthat} y \textbf{tests\textbackslash manual\textbackslash user\_vars}. Estos tests contienen las siguientes comprobaciones:
 \begin{itemize}
 	\item Las variables de usuario se crean correctamente.
 	\item Dos variables de usuario no pueden tener el mismo nombre.
@@ -36,81 +37,80 @@ Cómo hemos comentado, los tests que comprueban el correcto funcionamiento de la
 	\item Al ejecutarse las reglas las variables de usuario se modifican de forma correcta (cuando la \textit{Condition} o \textit{Action} dependen de otras variables de usuario definidas previamente).
 \end{itemize}
 
-\subsection{Intervenciones con variables de usuario}
+\subsection{Intervenciones con variables de usuario}\label{5.2.2}
 
-Una vez hemos comprobado que las variables de usuario funcionan de forma adecuada, ampliamos los tests del fichero \textbf{test.intervention.R} para asegurar que las intervenciones funcionan de forma correcta cuando depende de las variables de usuario creadas. Para ello añadimos 2 nuevos tests en este fichero para comprobar:
+Una vez hemos comprobado que las variables de usuario funcionan de forma adecuada, ampliamos los tests del fichero \textbf{test.intervention.R} para asegurar que las intervenciones funcionan de forma correcta cuando depende de las variables de usuario creadas. Para ello añadimos dos nuevos tests en este fichero para comprobar:
 \begin{itemize}
 	\item Las intervenciones se ejecutan de forma correcta cuando el \textbf{Trigger} (condición de ejecución de la intervención) depende de variables de usuario.
 	\item Las intervenciones se ejecutan de forma correcta cuando el \textbf{WhatHappens} (modificación en poblaciones o tasas realizada por la intervención) depende de variables de usuario.
 \end{itemize}
 
-\section{Resultados}
+\section{Resultados}\label{5.3}
 
 En esta sección vamos a comprobar que, efectivamente, los resultados obtenidos cumplen con lo esperado e, incluso, se han logrado resultados positivos que no se habían planteado inicialmente como objetivos del trabajo.
 
-\subsection{Variables de usuario como datos de interés a la salida}
+\subsection{Variables de usuario como datos de interés a la salida}\label{5.3.1}
 Al implementar las variables de usuario, como hemos comentado anteriormente, se permite obtener un enorme número de datos arbitrariamente complejos de la simulación a la salida. Estos pueden ser de gran interés para una mejor comprensión de lo ocurrido durante la simulación. En esta sección se van a plantear algunos ejemplo de ejecución en los que se saca partido a esta funcionalidad.
 
-\subsubsection{Representación de la proporción de cada \gls{genotype} sobre la población total}
+\subsubsection{Representación de la proporción de cada \gls{genotype} sobre la población total}\label{5.3.1.1}
 Comenzamos con un ejemplo muy sencillo en el que generamos un grupo de variables de usuario que almacenan la proporción de cada \gls{genotype} existente sobre el total de la población, es decir, matemáticamente cada una de estas variables es, para cada \gls{genotype} ``X'':
 $$proporcionX = n\_X/N$$
 Dónde ``n\_X'' es el tamaño de población correspondiente al \gls{genotype} X (o sea, el número de células del genotipo X), y ``N'' la población total (el número total de células).
 
-Con estas variables de usuario definidas iniciamos una simulación con 5 \glspl{genotype}: \textbf{WT} (el inicial, sin \glspl{mut}), \textbf{A}, \textbf{B}, \textbf{A,B} y \textbf{A,C}. Asignamos a cada uno de ellos sus \gls{fitness} y sus poblaciones iniciales (estos detalles se pueden ver en el código adjunto en el apéndice A.1 para ejecutar esta simulación), e iniciamos la simulación llamando a \textbf{OncoSimulIndiv}. En este caso simularemos tan solo un tiempo de 10 unidades, pues es suficiente para ver los datos que nos proporcionan las variables de usuario.
+Con estas variables de usuario definidas iniciamos una simulación con cinco \glspl{genotype}: \textbf{WT} (el inicial, sin \glspl{mut}), \textbf{A}, \textbf{B}, \textbf{A,B} y \textbf{A,C}. Asignamos a cada uno de ellos sus \gls{fitness} y sus poblaciones iniciales (estos detalles se pueden ver en el código adjunto en el apéndice \ref{A.1} para ejecutar esta simulación), e iniciamos la simulación llamando a \textbf{OncoSimulIndiv}. En este caso simularemos tan solo un tiempo de diez unidades, pues es suficiente para ver los datos que nos proporcionan las variables de usuario.
 
-Ahora representamos gráficamente los resultados obtenidos en las poblaciones de los \glspl{genotype} y en las variables de usuario (figuras 5.1 y 5.1).
+Ahora representamos gráficamente los resultados obtenidos en las poblaciones de los \glspl{genotype} y en las variables de usuario (figuras \ref{fig:populatonUV1} y \ref{fig:proportionUV1}).
 
 \begin{figure}[htp]
 	\begin{minipage}{0.48\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{imagenes/populationsUV1}
-		\caption{Evolución poblacional. Ejemplo 1 variables de usuario}
+		\caption{Evolución poblacional. Primer ejemplo variables de usuario}
 		\label{fig:populatonUV1}
 	\end{minipage}\hfill
 	\begin{minipage}{0.48\textwidth}
 			\centering
 		\includegraphics[width=\linewidth]{imagenes/proportionUV1}
-		\caption{Proporción de \glspl{genotype} en la población. Ejemplo 1 variables de usuario}
+		\caption{Proporción de \glspl{genotype} en la población. Primer ejemplo variables de usuario}
 		\label{fig:proportionUV1}
 	\end{minipage}
 \end{figure}
 
-Con sólo los datos de la evolución poblacional (fig. 5.1) podemos observar en líneas generales el avance de las poblaciones de los genotipos, pero no podemos sacar conclusiones fácilmente acerca de las relaciones entre las poblaciones de los distintos genotipos. (Téngase en cuenta que el gráfico se encuentra en escala logarítmica, por lo que las variaciones en los genotipos \textbf{AB} y \textbf{AC} son mínimas aunque sean apreciables en el gráfico).
+Con sólo los datos de la evolución poblacional (fig. \ref{fig:populatonUV1}) podemos observar en líneas generales el avance de las poblaciones de los genotipos, pero no podemos sacar conclusiones fácilmente acerca de las relaciones entre las poblaciones de los distintos genotipos. (Téngase en cuenta que el gráfico se encuentra en escala logarítmica, por lo que las variaciones en los genotipos \textbf{AB} y \textbf{AC} son mínimas aunque sean apreciables en el gráfico).
 
-Cuando observamos también los datos de las variables de usuario (fig 5.2) podemos observar claramente que los \glspl{genotype} \textbf{AB} y \textbf{AC} son apenas relevantes comparados con los otros, y además se aprecia que el \gls{genotype} \textbf{B} aumenta de forma proporcional al descenso en la población del \gls{genotype} \textbf{A}.
+Cuando observamos también los datos de las variables de usuario (fig. \ref{fig:proportionUV1}) podemos observar claramente que los \glspl{genotype} \textbf{AB} y \textbf{AC} son apenas relevantes comparados con los otros, y además se aprecia que el \gls{genotype} \textbf{B} aumenta de forma proporcional al descenso en la población del \gls{genotype} \textbf{A}.
 
-\subsubsection{Representación de la diferencia entre la \gls{tasaNac} y muerte}
+\subsubsection{Representación de la diferencia entre la \gls{tasaNac} y muerte}\label{5.3.1.2}
 Vamos ahora con otro ejemplo para analizar más profundamente el uso de variables de usuario. En este caso las que vamos a definir son variables que contengan el valor de la diferencia entre la \gls{tasaNac} y muerte de los distintos \glspl{genotype}. Este valor, por tanto, nos mostrará si se debería esperar que la población de un determinado \gls{genotype} crezca (si la diferencia es positiva) o disminuya (si es negativa). La fórmula para calcular estas variables de usuario es muy sencilla:
 $$diferenciaTasasX = b\_X - d\_X$$
 Dónde ``b\_X'' es la \gls{tasaNac} correspondiente al \gls{genotype} X, y ``d\_X'' la de muerte.
-Del mismo modo que en el ejemplo anterior, establecemos los datos de la simulación (visibles en el apéndice A.2 en el código para reproducir el ejemplo) que en este caso contará con 3 \glspl{genotype} \textbf{WT}, \textbf{A} y \textbf{B}, y, para que los datos de las tasas sean variables y más interesantes de analizar, definiremos el \gls{fitness} como dependiente de las frecuencias de los \glspl{genotype}, funcionalidad que también permite la herramienta \textbf{OncoSimulR}.
+Del mismo modo que en el ejemplo anterior, establecemos los datos de la simulación (visibles en el apéndice \ref{A.2} en el código para reproducir el ejemplo) que en este caso contará con 3 \glspl{genotype} \textbf{WT}, \textbf{A} y \textbf{B}, y, para que los datos de las tasas sean variables y más interesantes de analizar, definiremos el \gls{fitness} como dependiente de las frecuencias de los \glspl{genotype}, funcionalidad que también permite la herramienta \textbf{OncoSimulR}\cite{OncoSimulR}.
 
-Representamos los resultados obtenidos para las variables de usuario que representan la diferencia de tasas y la evolución poblacional (figuras 5.3 y 5.4).
-
+Representamos los resultados obtenidos para las variables de usuario que representan la diferencia de tasas y la evolución poblacional (figuras \ref{fig:rateDiffUV2} y \ref{fig:populationUV2}).
 \begin{figure}[htp]
 	\begin{minipage}{0.48\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{imagenes/rateDiffUV2}
-		\caption{Diferencia \glspl{tasaNac} y muerte. Ejemplo 2 variables de usuario}
+		\caption{Diferencia \glspl{tasaNac} y muerte. Segundo ejemplo variables de usuario}
 		\label{fig:rateDiffUV2}
 	\end{minipage}\hfill
 	\begin{minipage}{0.48\textwidth}
 		\centering
 		\includegraphics[width=\linewidth]{imagenes/populationsUV2}
-		\caption{Evolución poblacional. Ejemplo 2 variables de usuario}
+		\caption{Evolución poblacional. Segundo ejemplo variables de usuario}
 		\label{fig:populationUV2}
 	\end{minipage}
 \end{figure}
 
-Viendo la gráfica de variables de usuario (fig. 5.3) esto podemos estimar que a partir del tiempo 20-25 los \glspl{genotype} \textbf{A} y \textbf{B} comenzarán a crecer, el segundo más rápidamente que el primero. \textbf{A} debería comenzar a decrecer alrededor del tiempo 50, cuando la diferencia de tasas pasa a ser negativa, mientras que \textbf{B} lo hará más tarde en el tiempo 100 cuando su diferencia de tasas se estabiliza por debajo de 0. Por su parte esperamos que \textbf{WT} comienze a decrecer alrededor del tiempo 40.
+Viendo la gráfica de variables de usuario (fig. \ref{fig:rateDiffUV2}) esto podemos estimar que a partir del tiempo 20-25 los \glspl{genotype} \textbf{A} y \textbf{B} comenzarán a crecer, el segundo más rápidamente que el primero. \textbf{A} debería comenzar a decrecer alrededor del tiempo 50, cuando la diferencia de tasas pasa a ser negativa, mientras que \textbf{B} lo hará más tarde en el tiempo 100 cuando su diferencia de tasas se estabiliza por debajo de cero. Por su parte esperamos que \textbf{WT} comienze a decrecer alrededor del tiempo 40.
 
-Analizando la evolución poblacional (fig. 5.4) comprobamos que, los resultados son los esperados; las pequeñas variaciones se deben al componente aleatorio que existe en la evolución de las poblaciones. Por tanto, la observación de la diferencia de tasas que nos proporcionan las variables de usuario nos permite ver unos datos objetivos para predecir la evolución poblacional minimizando el efecto de la estocasticidad en el algoritmo.
+Analizando la evolución poblacional (fig. \ref{fig:populationUV2}) comprobamos que, los resultados son los esperados; las pequeñas variaciones se deben al componente aleatorio que existe en la evolución de las poblaciones. Por tanto, la observación de la diferencia de tasas que nos proporcionan las variables de usuario nos permite ver unos datos objetivos para predecir la evolución poblacional minimizando el efecto de la estocasticidad en el algoritmo.
 
-\subsection{Terapia Adaptativa}
+\subsection{Terapia Adaptativa}\label{5.3.2}
 Procedemos ahora a analizar el resultado de la funcionalidad correspondiente al objetivo principal de este trabajo, que es lograr simular la terapia adaptativa. Para ello empleamos una serie de ejemplos de ejecución que nos permitirán ver el funcionamiento de esta.
 
-\subsubsection{Selección de tratamiento según el \gls{genotype} más adaptado}
-Comenzamos con un ejemplo en el que simulamos un tratamiento en un paciente con cáncer. En este caso en el tumor aparecen tres \glspl{genotype}, el \gls{genotype} original \textbf{WT} sin \glspl{gen} mutados, y los \glspl{genotype} \textbf{A} y \textbf{B} con los \glspl{gen} A y B mutados respectivamente. En este ejemplo simularemos un tratamiento que varía para enfocarse en el \gls{genotype} con más velocidad de crecimiento y que, por tanto más posibilidades tiene de desarrollarse. Para ello partimos del mismo ejemplo que en el punto anterior (5.3.2) en el que calculamos la diferencia de las \glspl{tasaNac} y muerte, para de esta forma estimar cual es el \gls{genotype} con más posibilidades de proliferar. Además añadimos un mínimo poblacional de 1000 células para detectar determinado \gls{genotype}, es decir, que si la población de un \gls{genotype} no es superior a 1000 no se tratará, pues no se considera suficiente para ser detectado.
+\subsubsection{Selección de tratamiento según el \gls{genotype} más adaptado}\label{5.3.2.1}
+Comenzamos con un ejemplo en el que simulamos un tratamiento en un paciente con cáncer. En este caso en el tumor aparecen tres \glspl{genotype}, el \gls{genotype} original \textbf{WT} sin \glspl{gen} mutados, y los \glspl{genotype} \textbf{A} y \textbf{B} con los \glspl{gen} A y B mutados respectivamente. En este ejemplo simularemos un tratamiento que varía para enfocarse en el \gls{genotype} con más velocidad de crecimiento y que, por tanto más posibilidades tiene de desarrollarse. Para ello partimos del mismo ejemplo que en el punto anterior (\ref{5.3.1.2}) en el que calculamos la diferencia de las \glspl{tasaNac} y muerte, para de esta forma estimar cual es el \gls{genotype} con más posibilidades de proliferar. Además añadimos un mínimo poblacional de 1000 células para detectar determinado \gls{genotype}, es decir, que si la población de un \gls{genotype} no es superior a 1000 no se tratará, pues no se considera suficiente para ser detectado.
 
 Tras esto definimos una serie de intervenciones para minimizar el desarrollo del \gls{genotype} que tenga dicho valor más alto. Estas intervenciones las definimos del siguiente modo:
 
@@ -130,61 +130,79 @@ interventions <- list(
 )
 \end{R}
 
-Posteriormente iniciamos la simulación (el código para reproducir este ejmplo está en el apéndice A.3), obteniendo los resultados visibles en las figuras 5.5 y 5.6.
+Posteriormente iniciamos la simulación (el código para reproducir este ejemplo está en el apéndice \ref{A.3}), obteniendo los resultados visibles en las figuras \ref{fig:rateDiffAt1} y \ref{fig:populationAT1}.
 
 \begin{figure}[htp]
  	\begin{minipage}{0.48\textwidth}
      		\centering
      		\includegraphics[width=\linewidth]{imagenes/rateDiffAT1}
-		\caption{Diferencia \glspl{tasaNac} y muerte. Ejemplo 1 terapia adaptativa}
+		\caption{Diferencia \glspl{tasaNac} y muerte. Primer ejemplo terapia adaptativa}
 		\label{fig:rateDiffAt1}
    	\end{minipage}\hfill
    	\begin{minipage}{0.48\textwidth}
      		\centering
      		\includegraphics[width=\linewidth]{imagenes/populationsAT1}
-     		\caption{Evolución poblacional. Ejemplo 1 terapia adaptativa}
+     		\caption{Evolución poblacional. Primer ejemplo terapia adaptativa}
 		\label{fig:populationAT1}
    	\end{minipage}
 \end{figure}
 
 Vemos que efectivamente las bajadas bruscas en la población que corresponden a las intervenciones se producen al comienzo en \textbf{WT} que comienza siendo el más adaptado pues tiene mayor diferencia entre las tasas, pero a partir del tiempo 30 aproximadamente, estas pasan a realizarse sobre el \gls{genotype} \textbf{B}, que justo es a partir de ese punto cuando comienza a tener una diferencia entre tasas mucho más alta.
 
-\subsubsection{Simulación de situación verosímil}
-Por último vamos a simular un escenario complejo de terapia adaptativa intentando acercarnos lo máximo posible a lo que podría ocurrir en un caso real. Para ello establecemos en qué consistiría esta terapia adaptativa aplicable en la realidad, de modo similar a los ejemplos presentes en los artículos de Hansen \cite{Hansen1}\cite{Hansen2}\cite{Hansen3}:
+\subsubsection{Simulación de situación verosímil}\label{5.3.2.2}
+Por último vamos a simular un escenario complejo de terapia adaptativa intentando acercarnos lo máximo posible a lo que podría ocurrir en un caso real. Para ello establecemos en qué consistiría esta terapia adaptativa aplicable en la realidad, de modo similar a los ejemplos presentes en los artículos de Hansen \cite{Hansen1}\cite{Hansen2}\cite{Hansen3}, pero con un escenario bastante más complejo que combine varios tratamientos que se deban ajustar según su agresividad y eficacia contra el tumor:
 \begin{enumerate}
 	\item Cada cierto tiempo el paciente tiene una revisión dónde se analiza el progreso de su \gls{tumor}.
 	\item Si se detectan unos valores anormales en las poblaciones de \glspl{genotype} mutados se comienza un tratamiento base para tratar de frenar el avance de este.
 	\item Si se observa un crecimiento anormalmente grande de un tipo determinado de células se cambia el tratamiento que se estaba aplicando hasta el momento por otro más enfocado a las células de ese tipo.
 	\item Si el tumo sobrepasa un cierto tamaño preestablecido se plantea la necesidad de realizar una intervención quirúrgica para tratar de eliminarlo.
 \end{enumerate}
+
+Este escenario se corresponde a un tratamiento que aplica la técnica \textbf{``SMART''} (Sequential, Multiple Assignment, Randomized Trial), dónde cada cierto tiempo se evalúa el tratamiento a dar a un paciente en función de cómo está respondiendo a estos.
+
 Para este ejemplo además consideraremos preocupantes las células de \glspl{genotype} distintos al \textbf{WT}, pues este es el inicial sin \glspl{mut}, y, por tanto, no se considera peligroso.
 
-Todo el código para reproducir este ejemplo se encuentra en el apéndice A.4.
+Todo el código para reproducir este ejemplo se encuentra en el apéndice \ref{A.4}.
 
-Procedemos entonces a tratar de simular este escenario con 3 \glspl{genotype} \textbf{WT}, \textbf{A} y \textbf{B}, para ello definimos en primer lugar una serie de variables de usuario que serán:
-\begin{itemize}
-	\item \textbf{measure}: flag que determina si toca realizar una medición o no (revisión del paciente).
-	\item \textbf{lastTime}: almacena el último tiempo en que se ha realizado una medición.
-	\item \textbf{lastMeasuredA}: valor de la población del \gls{genotype} A en la última medición.
-	\item \textbf{lastMeasuredB}: valor de la población del \gls{genotype} B en la última medición.
-	\item \textbf{previousA}: valor de la población del \gls{genotype} A en la medición anterior (permite luego calcular las diferencias para ver el crecimiento).
-	\item \textbf{previousB}: valor de la población del \gls{genotype} B en la medición anterior (permite luego calcular las diferencias para ver el crecimiento).
-	\item \textbf{treatment}: variable que determinará el tratamiento a aplicar.
-\end{itemize}
+Procedemos entonces a tratar de simular este escenario con tres \glspl{genotype} \textbf{WT}, \textbf{A} y \textbf{B}, para ello definimos en primer lugar una serie de variables de usuario que serán:
+
+\begin{table}[h]
+	\footnotesize
+	\begin{tabular}{|p{3cm}|p{12.5cm}|}
+		\hline
+		\textbf{measure} & Flag que determina si toca realizar una medición o no (revisión del paciente) \\ \hline
+		\textbf{lastTime} & Almacena el último tiempo en que se ha realizado una medición \\ \hline
+		\textbf{lastMeasuredA} & Valor de la población del \gls{genotype} A en la última medición \\ \hline
+		\textbf{lastMeasuredB} & Valor de la población del \gls{genotype} B en la última medición \\ \hline
+		\textbf{previousA} & Valor de la población del \gls{genotype} A en la medición anterior (permite luego calcular las diferencias para ver el crecimiento) \\ \hline
+		\textbf{previousB} & Valor de la población del \gls{genotype} B en la medición anterior (permite luego calcular las diferencias para ver el crecimiento) \\ \hline
+		\textbf{treatment} & Variable que determinará el tratamiento a aplicar \\ \hline
+	\end{tabular}
+	\caption{Variables del segundo ejemplo de terapia adaptativa.}
+	\label{tab:ejemplocomplejovars}
+\end{table}
 
 Estas las modificaremos de acuerdo a las siguientes reglas:
-\begin{enumerate}
-	\item Si ``current time (T)'' - \textbf{lastTime}  < 10 (no han pasado 10 segundos):  \textbf{measure} = 0 (no hay que medir).
-	\item Si T - \textbf{lastTime}  > 10 (han pasado 10 segundos):  \textbf{measure} = 1 (hay que medir) y \textbf{lastTime} = T.
-	\item Si \textbf{measure} == 1 (hay que medir): \textbf{previousA} = \textbf{lastMeasuredA}; \textbf{previousB}=\textbf{lastMeasuredB}; \textbf{lastMeasuredA} = n\_A y \textbf{lastMeasuredB} = n\_B (almacenamos los datos medidos).
-		\item Si no se cumple ninguna de las condiciones siguientes (Si true): \textbf{treatment} = 0.
-	\item Si \textbf{lastMeasuredA} + \textbf{lastMeasuredB} > 100 (\gls{tumor} detectable): \textbf{treatment} = 1.
-	\item Si \textbf{lastMeasuredA} - \textbf{previousA} > 500 (\textbf{A} ha crecido mucho): \textbf{treatment} = 2.
-	\item Si \textbf{lastMeasuredB} - \textbf{previousB} > 500 (\textbf{B} ha crecido mucho): \textbf{treatment} = 3.
-	\item Si \textbf{lastMeasuredA} - \textbf{previousA} > 500 AND \textbf{lastMeasuredB} - \textbf{previousB} > 500 (\textbf{A} y \textbf{B} han crecido mucho): \textbf{treatment} = 4.
-\end{enumerate}
+
+\begin{table}[h]
+	\footnotesize
+	\begin{tabular}{|p{0.3cm}|p{15.2cm}|}
+		\hline
+		\textbf{1.} & Si ``current time (T)'' - \textbf{lastTime}  < 10 (no han pasado 10 segundos):  \textbf{measure} = 0 (no hay que medir) \\ \hline
+		\textbf{2.} & Si T - \textbf{lastTime}  > 10 (han pasado 10 segundos):  \textbf{measure} = 1 (hay que medir) y \textbf{lastTime} = T \\ \hline
+		\textbf{3.} & Si \textbf{measure} == 1 (hay que medir): \textbf{previousA} = \textbf{lastMeasuredA}; \textbf{previousB}=\textbf{lastMeasuredB}; \textbf{lastMeasuredA} = n\_A y \textbf{lastMeasuredB} = n\_B (almacenamos los datos medidos). \\ \hline
+		\textbf{4.} & Si no se cumple ninguna de las condiciones siguientes (Si true): \textbf{treatment} = 0. \\ \hline
+		\textbf{5.} & Si \textbf{lastMeasuredA} + \textbf{lastMeasuredB} > 100 (\gls{tumor} detectable): \textbf{treatment} = 1 \\ \hline
+		\textbf{6.} & Si \textbf{lastMeasuredA} - \textbf{previousA} > 500 (\textbf{A} ha crecido mucho): \textbf{treatment} = 2 \\ \hline
+		\textbf{7.} & Si \textbf{lastMeasuredB} - \textbf{previousB} > 500 (\textbf{B} ha crecido mucho): \textbf{treatment} = 3 \\ \hline
+		\textbf{8.} & Si \textbf{lastMeasuredA} - \textbf{previousA} > 500 AND \textbf{lastMeasuredB} - \textbf{previousB} > 500 (\textbf{A} y \textbf{B} han crecido mucho): \textbf{treatment} = 4 \\ \hline
+	\end{tabular}
+	\caption{Reglas del segundo ejemplo de terapia adaptativa.}
+	\label{tab:ejemplocomplejorules}
+\end{table}
 
 Ahora podemos definir las intervenciones en base al valor de \textbf{treatment} del siguiente modo:
+
 \begin{R}
 interventions <- list(
     list(ID           = "basicTreatment",
@@ -211,14 +229,13 @@ interventions <- list(
 )
 \end{R}
 
-Establecemos que el tratamiento básico se puede realizar cada 10 unidades de tiempo, los específicos sobre \textbf{A} y \textbf{B} al ser más agresivos establecemos que sólo se pueden realizar cada 20 unidades de tiempo, por último, la intervención quirúrgica no se puede realizar de forma muy habitual, por lo que establecemos que puede ocurrir cada 70 unidades, y se realizará cuando el conjunto de células peligrosas supere 5000.
+Establecemos que el tratamiento básico se puede realizar cada 10 unidades de tiempo, los específicos sobre \textbf{A} y \textbf{B} al ser más agresivos establecemos que sólo se pueden realizar cada 20 unidades de tiempo, por último, la intervención quirúrgica no se puede realizar de forma muy habitual, por lo que establecemos que puede ocurrir cada 70 unidades, y se realizará cuando el conjunto de células peligrosas supere 5000. Esto es muy interesante ya que nos permite ajustarnos a la realidad, dónde ciertos tratamientos requieren que el paciente realice tiempos de descanso, pues son excesivamente agresivos y provocan numerosos efectos adversos.
 
-Con todo esto comenzamos la simulación, obteniendo el siguiente resultado poblacional:
-
+Con todo esto comenzamos la simulación, obteniendo el resultado poblacional de la figura \ref{fig:populationAT2}.
 \begin{figure}[htp]
 	\centering
-	\includegraphics[width=10cm]{imagenes/resultsAT2}
-	\caption{Evolución poblacional. Ejemplo 2 terapia adaptativa}
+	\includegraphics[width=\linewidth/2]{imagenes/resultsAT2}
+	\caption{Evolución poblacional. Segundo ejemplo terapia adaptativa}
 	\label{fig:populationAT2}
 \end{figure}
 

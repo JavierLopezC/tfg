@@ -1,8 +1,11 @@
-\chapter{Código para  reproducir los ejemplos de la sección Resultados \label{sec:ejemplos}}
+\chapter{Código para  reproducir los ejemplos de la sección Resultados \label{sec:ejemplos}}\label{A}
 
-Todos estos ejemplos así como algunos extra están incluidos en la secciçon correspondiente a las variables de usuario y terapia adaptativa de la viñeta de OncoSimulR. Se puede encontrar en el link https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/vignettes/OncoSimulR.Rmd a partir de la línea 12801. 
-\section{Ejemplo  de uso de variables de usuario para controlar la proporcion de cada genotipo en la población total}
-Código para reproducir el segundo ejemplo del punto 5.3.1:
+Todos estos ejemplos así como algunos extra están incluidos en la sección correspondiente a las variables de usuario y terapia adaptativa de la viñeta de OncoSimulR. Se puede encontrar en el link \url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/vignettes/OncoSimulR.Rmd} a partir de la línea 12801. 
+\section{Ejemplo  de uso de variables de usuario para controlar la proporcion de cada genotipo en la población total}\label{A.1}
+
+\url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/vignettes/OncoSimulR.Rmd} línea 12900.
+
+Código para reproducir el primer ejemplo del punto \ref{5.3.1.1}:
 \begin{R}
 dfuv2 <- data.frame(Genotype = c("WT", "B", "A", "B, A", "C, A"),
                        Fitness = c("0*n_",
@@ -69,8 +72,12 @@ lines(unlist(uvex2$other$userVarValues) [c(FALSE, FALSE, FALSE, FALSE, TRUE)], u
 lines(unlist(uvex2$other$userVarValues) [c(FALSE, FALSE, FALSE, FALSE, TRUE)], unlist(uvex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE, FALSE)], type="l", col="#666666") 
 legend(0,1,legend=c("genABProp", "genACProp", "genAProp", "genBProp"), col=c("purple", "#E6AB02", "#1B9E77", "#666666"), lty= 1:2) 
 \end{R}
-\section{Ejemplo  de uso de variables de usuario para calcular la diferencia entre tasa de nacimiento y muerte de los genotipos}
-Código para reproducir el segundo ejemplo del punto 5.3.1:
+\section{Ejemplo  de uso de variables de usuario para calcular la diferencia entre tasa de nacimiento y muerte de los genotipos}\label{A.2}
+
+\url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/vignettes/OncoSimulR.Rmd} línea 12974.
+
+
+Código para reproducir el segundo ejemplo del punto \ref{5.3.1.2}::
 \begin{R}
 dfuv3 <- data.frame(Genotype = c("WT", "A", "B"), 
                    Fitness = c("1",
@@ -129,8 +136,11 @@ lines(unlist(uvex3$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(u
 lines(unlist(uvex3$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(uvex3$other$userVarValues) [c(FALSE, TRUE, FALSE, FALSE)], type="l", col="#666666") 
 legend(0,0.75,legend=c("genWTRateDiff", "genARateDiff", "genBRateDiff"), col=c("#1B9E77", "#A6761D", "#666666"), lty= 1:2) 
 \end{R}
-\section{Ejemplo de terapia adaptativa para atacar al genotipo más adaptado}
-Código para reproducir el primer ejemplo del punto 5.3.2:
+\section{Ejemplo de terapia adaptativa para atacar al genotipo más adaptado}\label{A.3}
+
+\url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/vignettes/OncoSimulR.Rmd} línea 13117.
+
+Código para reproducir el primer ejemplo del punto \ref{5.3.2.1}:
 \begin{R}
 dfat2 <- data.frame(Genotype = c("WT", "A", "B"), 
                    Fitness = c("1",
@@ -220,8 +230,11 @@ lines(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(a
 lines(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(atex2$other$userVarValues) [c(FALSE, FALSE, TRUE, FALSE)], type="l", col="#1B9E77") 
 legend(0,0.75,legend=c("genADiff", "genBDiff", "genWTDiff"), col=c("#A6761D", "#666666", "#1B9E77"), lty= 1:2) 
 \end{R}
-\section{Ejemplo de terapia adaptativa en escenario verosímil}
-Código para reproducir el segundo ejemplo del punto 5.3.2:
+\section{Ejemplo de terapia adaptativa en escenario verosímil}\label{A.4}
+
+\url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/vignettes/OncoSimulR.Rmd} línea 13223.
+
+Código para reproducir el segundo ejemplo del punto \ref{5.3.2.2}:
 \begin{R}
 dfat3 <- data.frame(Genotype = c("WT", "A", "B"), 
                    Fitness = c("1",
@@ -327,11 +340,71 @@ atex2 <- oncoSimulIndiv(afat3,
 plot(atex2, show = "genotypes", type = "line")
 \end{R}
 
-\chapter{Documentación de las principales funciones de R \label{sec:docum}}
+\chapter{Documentación de las principales funciones de R \label{sec:docum}}\label{B}
 
 También se ha añadido documentación extensa siguiendo el formato estándar de R para las principales funciones accesibles por el usuario en esta nueva funcionalidad. Esto incluye:
 
 \begin{itemize}
-	\item modificación de la documentación de las funciones \textit{OncoSimulIndiv}, \textit{OncoSimulPop} y \textit{OncoSimulSample} para explicar los nuevos parámetros de la simulación. \\ https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/man/oncoSimulIndiv.Rd.
-	\item Elaboración de documentación extensa y con ejemplos de uso de las funciones \textit{createUserVariables} y \textit{createRules}, que son las accesibles directamente por el susario para la especificación de estos argumentos. \\ https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/man/createUserVars.Rd.
+	\item modificación de la documentación de las funciones \textit{OncoSimulIndiv}, \textit{OncoSimulPop} y \textit{OncoSimulSample} para explicar los nuevos parámetros de la simulación. \\ \url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/man/oncoSimulIndiv.Rd}.
+	\item Elaboración de documentación extensa y con ejemplos de uso de las funciones \textit{createUserVariables} y \textit{createRules}, que son las accesibles directamente por el susario para la especificación de estos argumentos. \\ \url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/man/createUserVars.Rd}.
 \end{itemize}
+
+
+\chapter{Cabeceras del TAD de variables de usuario \label{sec:cabeceras}}\label{C}
+
+Aquí se proporciona el código de las cabeceras y las estructuras pertenecientes al TAD que implementa las variables de usuario para facilitar la compresión de la implementación. Estas cabeceras se corresponden con el documento \textbf{user\_vars.h}. La implementación detallada de estas funciones se puede ver en \url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/src/user_var.cpp}.
+
+\begin{CPP}
+	// we declare the needed symbols for the table
+	typedef exprtk::symbol_table<double> symbol_table_t;
+	typedef exprtk::expression<double> expression_t;
+	typedef exprtk::parser<double> parser_t;
+	
+	// We define what a rule is
+	typedef struct {
+		std::string id; // identifier of the rule
+		std::string condition; // condition that must be true for the rulle to execute
+		std::string action; // action to be performed when the condition is satisfied
+	} Rule;
+	
+	//Define a structure with all info asociated with user_vars
+	typedef struct{
+		std::map<std::string, double> userVars; // maps a user variable name to its current value
+		std::vector<Rule> rules; // rules that apply to the group of user variables
+		std::map<std::string, double> mapGenoToPop; // variable that maps a genotype to its population
+	}UserVarsInfo;
+	
+	// function that creates the UserVarsInfo structure
+	UserVarsInfo createUserVarsInfo(Rcpp::List Rules,
+	Rcpp::List userVars,
+	const fitnessEffectsAll& fitnessEffects, 
+	const std::vector<spParamsP>& popParams, 
+	std::vector<Genotype> Genotypes);
+	
+	// function that creates a rule in memory
+	Rule createRule(std::string id, 
+	std::string condition, 
+	std::string action);
+	
+	// Function that add an user_var to the map of user_vars
+	UserVarsInfo addUserVar(UserVarsInfo uvif, std::string name, double value);
+	
+	// Function that add a rule to the array of rules
+	UserVarsInfo addRule(UserVarsInfo uvif, Rule r);
+	
+	// function that destroys the rule in memory
+	UserVarsInfo destroyRule(UserVarsInfo uvif, Rule r);
+	
+	// function that executes the whole list of rules for the user variables
+	void executeRules (UserVarsInfo& uvif,
+	double &currentTime,
+	std::map<std::string, double> birthMap,
+	std::map<std::string, double> deathMap,
+	std::map<std::string, double> mutationMap);
+	
+	// function that compares two rules
+	int compareRules(Rule r1, Rule r2);
+	
+	void printUserVarsInfo(UserVarsInfo uvif);
+	void printRule(Rule r);
+\end{CPP}
