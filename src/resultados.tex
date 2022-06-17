@@ -102,63 +102,74 @@ Representamos los resultados obtenidos para las variables de usuario que represe
 	\end{minipage}
 \end{figure}
 
-Viendo la gráfica de variables de usuario (fig. \ref{fig:rateDiffUV2}) esto podemos estimar que a partir del tiempo 20-25 los \glspl{genotype} \textbf{A} y \textbf{B} comenzarán a crecer, el segundo más rápidamente que el primero. \textbf{A} debería comenzar a decrecer alrededor del tiempo 50, cuando la diferencia de tasas pasa a ser negativa, mientras que \textbf{B} lo hará más tarde en el tiempo 100 cuando su diferencia de tasas se estabiliza por debajo de cero. Por su parte esperamos que \textbf{WT} comienze a decrecer alrededor del tiempo 40.
+Viendo la gráfica de variables de usuario (fig. \ref{fig:rateDiffUV2}) esto podemos estimar que a partir del tiempo 20-25 los \glspl{genotype} \textbf{A} y \textbf{B} comenzarán a crecer, el segundo más rápidamente que el primero. \textbf{A} debería comenzar a decrecer alrededor del tiempo 50, cuando la diferencia de tasas pasa a ser negativa, mientras que \textbf{B} lo hará más tarde en el tiempo 100 cuando su diferencia de tasas se estabiliza por debajo de cero. Por su parte esperamos que \textbf{WT} comience a decrecer alrededor del tiempo 40.
 
 Analizando la evolución poblacional (fig. \ref{fig:populationUV2}) comprobamos que, los resultados son los esperados; las pequeñas variaciones se deben al componente aleatorio que existe en la evolución de las poblaciones. Por tanto, la observación de la diferencia de tasas que nos proporcionan las variables de usuario nos permite ver unos datos objetivos para predecir la evolución poblacional minimizando el efecto de la estocasticidad en el algoritmo.
 
 \subsection{Terapia Adaptativa}\label{5.3.2}
-Procedemos ahora a analizar el resultado de la funcionalidad correspondiente al objetivo principal de este trabajo, que es lograr simular la terapia adaptativa. Para ello empleamos una serie de ejemplos de ejecución que nos permitirán ver el funcionamiento de esta.
+Procedemos ahora a analizar el resultado de la funcionalidad correspondiente al objetivo principal de este trabajo, que es lograr simular la terapia adaptativa. Para ello mostramos dos ejemplos que lo ilustran claramente. Se proporciona también un tercer ejemplo más sencillo visible en el apéndice \ref{A.5}.
 
-\subsubsection{Selección de tratamiento según el \gls{genotype} más adaptado}\label{5.3.2.1}
-Comenzamos con un ejemplo en el que simulamos un tratamiento en un paciente con cáncer. En este caso en el tumor aparecen tres \glspl{genotype}, el \gls{genotype} original \textbf{WT} sin \glspl{gen} mutados, y los \glspl{genotype} \textbf{A} y \textbf{B} con los \glspl{gen} A y B mutados respectivamente. En este ejemplo simularemos un tratamiento que varía para enfocarse en el \gls{genotype} con más velocidad de crecimiento y que, por tanto más posibilidades tiene de desarrollarse. Para ello partimos del mismo ejemplo que en el punto anterior (\ref{5.3.1.2}) en el que calculamos la diferencia de las \glspl{tasaNac} y muerte, para de esta forma estimar cual es el \gls{genotype} con más posibilidades de proliferar. Además añadimos un mínimo poblacional de 1000 células para detectar determinado \gls{genotype}, es decir, que si la población de un \gls{genotype} no es superior a 1000 no se tratará, pues no se considera suficiente para ser detectado.
+\subsubsection{Simulación ejemplo canónico de terapia adaptativa}\label{5.3.2.1}
 
-Tras esto definimos una serie de intervenciones para minimizar el desarrollo del \gls{genotype} que tenga dicho valor más alto. Estas intervenciones las definimos del siguiente modo:
+Vamos a simular un ejemplo canónico de terapia adaptativa mostrado en los artículos de Hansen\cite{Hansen1}\cite{Hansen2} similar al de la figura \ref{fig:adapt}.
 
-\begin{R}
-interventions <- list(
-    list(ID           = "i1",
-        Trigger       = "genADiff > genBDiff and genADiff > genWTDiff",
-        WhatHappens   = "n_A = n_A*0.5",
-        Periodicity   = 10,
-        Repetitions   = Inf
-    ),list(ID           = "i2",
-        Trigger       = "genBDiff > genADiff and genBDiff > genWTDiff",
-        WhatHappens   = "n_B = n_B*0.5",
-        Periodicity   = 10,
-        Repetitions   = Inf
-    )
-)
-\end{R}
+Para ello establecemos una situación inicial con 3 genotipos presentes en un tumor, el \gls{genotype} correspondiente a las células sanas \textbf{WT}, y los \glspl{genotype} \textbf{A} (con el \gls{gen} A mutado) y \textbf{B} (con el \gls{gen} B mutado) que representarán las células cancerígenas. De estos dos grupos de células cancerígenas, las de \gls{genotype} A serán las resistentes al tratamiento.
 
-Posteriormente iniciamos la simulación (el código para reproducir este ejemplo está en el apéndice \ref{A.3}), obteniendo los resultados visibles en las figuras \ref{fig:rateDiffAt1} y \ref{fig:populationAT1}.
+En esta situación inicial tendremos 10000 células sanas (WT), 50 de tipo resistente (A) y 1000 de tipo no resistente (B), además establecemos que las células resistentes aumenten de forma más lenta que las no resistentes a través del fitness.
+
+Partiendo de estos datos comenzamos en primer lugar una simulación aplicando una terapia simple (no adaptativa), para ello no definimos ninguna variable de usuario y tan solo creamos una intervención que emulará un tratamiento sobre el \gls{genotype} B. Este tratamiento será continuo y se iniciará tras 10 unidades de tiempo en la simulación.
+
+De forma paralela a esta, realizamos otra simulación con exactamente la misma situación inicial, pero en este caso sí aplicamos terapia adaptativa. Para emular esta terapia definimos una serie de variables de usuario y reglas para simular el siguiente tratamiento:
+
+\begin{table}[h]
+	\footnotesize
+	\begin{tabular}{|p{0.3cm}|p{15.2cm}|}
+		\hline
+		\textbf{1.} & Cada 10 unidades de tiempo se llevará a cabo una revisión del estado del tumor en el paciente \\ \hline
+		\textbf{2.} & Si al realizar la revisión la población total de células cancerígenas (\glspl{genotype} A y B) es superior a 2000 se iniciará un tratamiento \\ \hline
+		\textbf{3.} & Si al realizar la revisión la población cancerígena es menor que 2000, se parará el tratamiento \\ \hline
+	\end{tabular}
+	\caption{Tratamiento del primer ejemplo de terapia adaptativa.}
+	\label{tab:ejemploATtreat}
+\end{table}
+
+El código completo para reproducir estos ejemplos tanto con como sin terapia adaptativa así como las definiciones de las intervenciones, variables de usuario y reglas necesarias se pueden encontrar en el apéndice \ref{A.3}.
+
+Comenzamos entonces la simulación de ambos casos. Los resultados obtenidos son los visibles en las figuras \ref{fig:hansen2000sin} y \ref{fig:hansen2000con}.
 
 \begin{figure}[htp]
- 	\begin{minipage}{0.48\textwidth}
-     		\centering
-     		\includegraphics[width=\linewidth]{imagenes/rateDiffAT1}
-		\caption{Diferencia \glspl{tasaNac} y muerte. Primer ejemplo terapia adaptativa}
-		\label{fig:rateDiffAt1}
-   	\end{minipage}\hfill
-   	\begin{minipage}{0.48\textwidth}
-     		\centering
-     		\includegraphics[width=\linewidth]{imagenes/populationsAT1}
-     		\caption{Evolución poblacional. Primer ejemplo terapia adaptativa}
-		\label{fig:populationAT1}
-   	\end{minipage}
+	\begin{minipage}{0.48\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{imagenes/hansen2000-2}
+		\caption{Poblaciones situación inicial sin terapia adaptativa}
+		\label{fig:hansen2000sin}
+	\end{minipage}\hfill
+	\begin{minipage}{0.48\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{imagenes/hansen2000-1}
+		\caption{Poblaciones en ejemplo canónico de terapia adaptativa}
+		\label{fig:hansen2000con}
+	\end{minipage}
 \end{figure}
 
-Vemos que efectivamente las bajadas bruscas en la población que corresponden a las intervenciones se producen al comienzo en \textbf{WT} que comienza siendo el más adaptado pues tiene mayor diferencia entre las tasas, pero a partir del tiempo 30 aproximadamente, estas pasan a realizarse sobre el \gls{genotype} \textbf{B}, que justo es a partir de ese punto cuando comienza a tener una diferencia entre tasas mucho más alta.
+Podemos observar como, en el caso en que no aplicamos la terapia adaptativa (figura \ref{fig:hansen2000sin}) eliminamos rápidamente la población de \gls{genotype} B, y la ausencia de competencia hace que la población del \gls{genotype} resistente A se dispare fuera de control. Esto es justo lo que ocurre en el caso \textbf{b} de la figura \ref{fig:adapt}.
+Por el contrario, en el caso con terapia adaptativa (figura \ref{fig:hansen2000con}), se logra mantener a raya y en un tamaño estable la población de células cancerígenas durante mucho más tiempo. Esto se debe a que, al ir parando la terapia de forma controlada, se mantiene un cierto grado de competencia celular entre los genotipos, haciendo que la población resistente (que no tenemos forma de reducir mediante tratamientos) no se dispare fuera de control gracias a la presencia de una cierta cantidad de células del \gls{genotype} no resistente B. Finalmente la población resistente sí acaba expandiéndose más allá de lo controlable, ya que no estamos en un caso ideal, pero la terapia adaptativa logra su función, que es mantener a raya el crecimiento del tumor durante el mayor tiempo posible. Esto es justo lo que se muestra en el caso \textbf{c} de la figura \ref{fig:adapt}, que representa un caso canónico de terapia adaptativa y que hemos logrado reproducir, consiguiendo el principal objetivo de este trabajo.
 
-\subsubsection{Simulación de situación verosímil}\label{5.3.2.2}
-Por último vamos a simular un escenario complejo de terapia adaptativa intentando acercarnos lo máximo posible a lo que podría ocurrir en un caso real. Para ello establecemos en qué consistiría esta terapia adaptativa aplicable en la realidad, de modo similar a los ejemplos presentes en los artículos de Hansen \cite{Hansen1}\cite{Hansen2}\cite{Hansen3}, pero con un escenario bastante más complejo que combine varios tratamientos que se deban ajustar según su agresividad y eficacia contra el tumor:
-\begin{enumerate}
-	\item Cada cierto tiempo el paciente tiene una revisión dónde se analiza el progreso de su \gls{tumor}.
-	\item Si se detectan unos valores anormales en las poblaciones de \glspl{genotype} mutados se comienza un tratamiento base para tratar de frenar el avance de este.
-	\item Si se observa un crecimiento anormalmente grande de un tipo determinado de células se cambia el tratamiento que se estaba aplicando hasta el momento por otro más enfocado a las células de ese tipo.
-	\item Si el tumo sobrepasa un cierto tamaño preestablecido se plantea la necesidad de realizar una intervención quirúrgica para tratar de eliminarlo.
-\end{enumerate}
+\subsubsection{Simulación de situación verosímil compleja con terapia "SMART"}\label{5.3.2.2}
+Por último vamos a simular un escenario complejo de terapia adaptativa intentando acercarnos lo máximo posible a lo que podría ocurrir en un caso real. Para ello establecemos en qué consistiría esta terapia adaptativa aplicable en la realidad, siguiendo una metodología \textbf{"SMART"} (Sequential, Multiple Assignment, Randomized Trial), dónde cada cierto tiempo se evalúa el tratamiento a dar a un paciente en función de cómo está respondiendo a estos. De este modo planteamos el siguiente tratamiento:
 
-Este escenario se corresponde a un tratamiento que aplica la técnica \textbf{``SMART''} (Sequential, Multiple Assignment, Randomized Trial), dónde cada cierto tiempo se evalúa el tratamiento a dar a un paciente en función de cómo está respondiendo a estos.
+\begin{table}[h]
+	\footnotesize
+	\begin{tabular}{|p{0.3cm}|p{15.2cm}|}
+		\hline
+		\textbf{1.} & Cada cierto tiempo el paciente tiene una revisión dónde se analiza el progreso de su \gls{tumor} \\ \hline
+		\textbf{2.} & Si se detectan unos valores anormales en las poblaciones de \glspl{genotype} mutados se comienza un tratamiento base para tratar de frenar el avance de este \\ \hline
+		\textbf{3.} & Si se observa un crecimiento anormalmente grande de un tipo determinado de células se cambia el tratamiento que se estaba aplicando hasta el momento por otro más enfocado a las células de ese tipo \\ \hline
+		\textbf{4.} & Si el tumo sobrepasa un cierto tamaño preestablecido se plantea la necesidad de realizar una intervención quirúrgica para tratar de eliminarlo \\ \hline
+	\end{tabular}
+	\caption{Tratamiento del segundo ejemplo de terapia adaptativa.}
+	\label{tab:ejemplocomplejotreat}
+\end{table}
 
 Para este ejemplo además consideraremos preocupantes las células de \glspl{genotype} distintos al \textbf{WT}, pues este es el inicial sin \glspl{mut}, y, por tanto, no se considera peligroso.
 
@@ -225,8 +236,7 @@ interventions <- list(
         WhatHappens   = "N = 0.1*N",
         Periodicity   = 70,
         Repetitions   = Inf
-    )
-)
+    ))
 \end{R}
 
 Establecemos que el tratamiento básico se puede realizar cada 10 unidades de tiempo, los específicos sobre \textbf{A} y \textbf{B} al ser más agresivos establecemos que sólo se pueden realizar cada 20 unidades de tiempo, por último, la intervención quirúrgica no se puede realizar de forma muy habitual, por lo que establecemos que puede ocurrir cada 70 unidades, y se realizará cuando el conjunto de células peligrosas supere 5000. Esto es muy interesante ya que nos permite ajustarnos a la realidad, dónde ciertos tratamientos requieren que el paciente realice tiempos de descanso, pues son excesivamente agresivos y provocan numerosos efectos adversos.

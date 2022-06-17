@@ -136,101 +136,128 @@ lines(unlist(uvex3$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(u
 lines(unlist(uvex3$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(uvex3$other$userVarValues) [c(FALSE, TRUE, FALSE, FALSE)], type="l", col="#666666") 
 legend(0,0.75,legend=c("genWTRateDiff", "genARateDiff", "genBRateDiff"), col=c("#1B9E77", "#A6761D", "#666666"), lty= 1:2) 
 \end{R}
-\section{Ejemplo de terapia adaptativa para atacar al genotipo más adaptado}\label{A.3}
 
-\url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/vignettes/OncoSimulR.Rmd} línea 13117.
+\section{Ejemplo canónico de terapia adaptativa}\label{A.3}
 
-Código para reproducir el primer ejemplo del punto \ref{5.3.2.1}:
+\url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/vignettes/OncoSimulR.Rmd} línea 13333.
+
+Código para reproducir los ejemplos mostrados en el apartado \ref{5.3.2.1}:
+
+- Sin terapia adaptativa:
+
 \begin{R}
-dfat2 <- data.frame(Genotype = c("WT", "A", "B"), 
-                   Fitness = c("1",
-                               "1 + 0.2 * (n_B > 10)",
-                               ".9 + 0.4 * (n_A > 10)"
-                               ))
-afat2 <- allFitnessEffects(genotFitness = dfat2, 
-                         frequencyDependentFitness = TRUE)
-    
-
-userVars <- list(
-    list(Name           = "genADiff",
-        Value       = 0
-    ),list(Name           = "genBDiff",
-        Value       = 0
-    ),list(Name           = "genWTDiff",
-        Value       = 0
-    )
-)
-
-userVars <- createUserVars(userVars)
-
-rules <- list(
-        list(ID = "rule_1",
-            Condition = "TRUE",
-            Action = "genADiff = b_1-d_1"
-        ),list(ID = "rule_2",
-            Condition = "TRUE",
-            Action = "genBDiff = b_2-d_2"
-        ),list(ID = "rule_3",
-            Condition = "TRUE",
-            Action = "genWTDiff = b_-d_"
-        ),list(ID = "rule_4",
-            Condition = "n_A < 1000",
-            Action = "genADiff = -1"
-        ),list(ID = "rule_5",
-            Condition = "n_B < 1000",
-            Action = "genBDiff = -1"
-        ),list(ID = "rule_6",
-            Condition = "n_ < 1000",
-            Action = "genWTDiff = -1"
-        )
-    )
-
-rules <- createRules(rules, afat2)
-
-interventions <- list(
-    list(ID           = "i1",
-        Trigger       = "genADiff > genBDiff and genADiff > genWTDiff",
-        WhatHappens   = "n_A = n_A*0.5",
-        Periodicity   = 10,
-        Repetitions   = Inf
-    ),list(ID           = "i2",
-        Trigger       = "genBDiff > genADiff and genBDiff > genWTDiff",
-        WhatHappens   = "n_B = n_B*0.5",
-        Periodicity   = 10,
-        Repetitions   = Inf
-    ),list(ID           = "i3",
-        Trigger       = "genWTDiff > genADiff and genWTDiff > genBDiff",
-        WhatHappens   = "n_ = n_*0.5",
-        Periodicity   = 10,
-        Repetitions   = Inf
-    )
-)
-
-interventions <- createInterventions(interventions, afat2)
-
-set.seed(1) ## for reproducibility
-atex2 <- oncoSimulIndiv(afat2,
-                       model = "McFLD", 
-                       onlyCancer = FALSE, 
-                       finalTime = 200,
-                       mu = 1e-4,
-                       initSize = 5000, 
-                       keepPhylog = FALSE,
-                       seed = NULL, 
-                       errorHitMaxTries = FALSE, 
-                       errorHitWallTime = FALSE,
-                       userVars = userVars,
-                       rules = rules,
-                       interventions = interventions)
-
-plot(atex2, show = "genotypes", type = "line")
-
-plot(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(atex2$other$userVarValues) [c(TRUE, FALSE, FALSE, FALSE)], xlab="Time", ylab="RateDiff", ylim=c(-0.75,0.75), type="l", col="#A6761D")  
-lines(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(atex2$other$userVarValues) [c(FALSE, TRUE, FALSE, FALSE)], type="l", col="#666666") 
-lines(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(atex2$other$userVarValues) [c(FALSE, FALSE, TRUE, FALSE)], type="l", col="#1B9E77") 
-legend(0,0.75,legend=c("genADiff", "genBDiff", "genWTDiff"), col=c("#A6761D", "#666666", "#1B9E77"), lty= 1:2) 
+	dfat4 <- data.frame(Genotype = c("WT", "A", "B"), 
+	Fitness = c("n_/n_",
+	"1.005",
+	"1.1"
+	))
+	afat4 <- allFitnessEffects(genotFitness = dfat4, 
+	frequencyDependentFitness = TRUE)
+	
+	interventions <- list(
+	list(ID           = "i1",
+	Trigger       = "T > 10",
+	WhatHappens   = "n_B = n_B*0.8",
+	Periodicity   = 1,
+	Repetitions   = Inf
+	)
+	)
+	
+	interventions <- createInterventions(interventions, afat4)
+	
+	set.seed(1) ## for reproducibility
+	atex4 <- oncoSimulIndiv(afat4,
+	model = "McFLD", 
+	onlyCancer = FALSE, 
+	finalTime = 2000,
+	mu = 1e-4,
+	initSize = c(10000, 50, 1000), 
+	initMutant = c("WT", "A", "B"),
+	keepPhylog = FALSE,
+	seed = NULL, 
+	errorHitMaxTries = FALSE, 
+	errorHitWallTime = FALSE,
+	interventions = interventions)
+	
+	plot(atex4, show = "genotypes", type = "line")
 \end{R}
-\section{Ejemplo de terapia adaptativa en escenario verosímil}\label{A.4}
+
+- Con terapia adaptativa:
+\begin{R}
+	dfat5 <- data.frame(Genotype = c("WT", "A", "B"), 
+	Fitness = c("n_/n_",
+	"1.005",
+	"1.1"
+	))
+	afat5 <- allFitnessEffects(genotFitness = dfat5, 
+	frequencyDependentFitness = TRUE)
+	
+	userVars <- list(
+	list(Name           = "measure",
+	Value       = 0
+	),list(Name           = "lastTime",
+	Value       = 0
+	),list(Name           = "treatment",
+	Value       = 0
+	),list(Name           = "totalPopMeasured",
+	Value       = 0
+	)
+	)
+	
+	userVars <- createUserVars(userVars)
+	
+	rules <- list(
+	list(ID = "rule_1",
+	Condition = "T - lastTime < 10",
+	Action = "measure = 0"
+	),list(ID = "rule_2",
+	Condition = "T - lastTime >= 10",
+	Action = "measure = 1;lastTime = T"
+	),list(ID = "rule_3",
+	Condition = "measure == 1",
+	Action = "totalPopMeasured = n_A + n_B"
+	),list(ID = "rule_4",
+	Condition = "totalPopMeasured < 2000",
+	Action = "treatment = 0"
+	),list(ID = "rule_5",
+	Condition = "totalPopMeasured >= 2000",
+	Action = "treatment = 1"
+	)
+	)
+	
+	rules <- createRules(rules, afat5)
+	
+	interventions <- list(
+	list(ID           = "i1",
+	Trigger       = "treatment == 1",
+	WhatHappens   = "n_B = n_B*0.8",
+	Periodicity   = 1,
+	Repetitions   = Inf
+	)
+	)
+	
+	interventions <- createInterventions(interventions, afat5)
+	
+	set.seed(1) ## for reproducibility
+	atex5 <- oncoSimulIndiv(afat5,
+	model = "McFLD", 
+	onlyCancer = FALSE, 
+	finalTime = 2000,
+	mu = 1e-4,
+	initSize = c(10000, 50, 1000), 
+	initMutant = c("WT", "A", "B"),
+	keepPhylog = FALSE,
+	seed = NULL, 
+	errorHitMaxTries = FALSE, 
+	errorHitWallTime = FALSE,
+	userVars = userVars,
+	rules = rules,
+	interventions = interventions)
+	
+	plot(atex5, show = "genotypes", type = "line")
+\end{R}
+	
+\section{Ejemplo de terapia adaptativa en escenario verosímil con terapia ``SMART''}\label{A.4}
 
 \url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/vignettes/OncoSimulR.Rmd} línea 13223.
 
@@ -338,6 +365,141 @@ atex2 <- oncoSimulIndiv(afat3,
                        interventions = interventions)
 
 plot(atex2, show = "genotypes", type = "line")
+\end{R}
+
+\section{Ejemplo de terapia adaptativa para atacar al genotipo más adaptado}\label{A.5}
+
+Proponemos aquí un ejemplo extra en el que simulamos un tratamiento adaptativo en un paciente con cáncer. En este caso en el tumor aparecen tres \glspl{genotype}, el \gls{genotype} original \textbf{WT} sin \glspl{gen} mutados, y los \glspl{genotype} \textbf{A} y \textbf{B} con los \glspl{gen} A y B mutados respectivamente. En este ejemplo simularemos un tratamiento que varía para enfocarse en el \gls{genotype} con más velocidad de crecimiento y que, por tanto más posibilidades tiene de desarrollarse. Para ello partimos del mismo ejemplo que en el punto (\ref{5.3.1.2}) en el que calculamos la diferencia de las \glspl{tasaNac} y muerte, para de esta forma estimar cual es el \gls{genotype} con más posibilidades de proliferar. Además añadimos un mínimo poblacional de 1000 células para detectar determinado \gls{genotype}, es decir, que si la población de un \gls{genotype} no es superior a 1000 no se tratará, pues no se considera suficiente para ser detectado.
+
+Tras esto definimos una serie de intervenciones para minimizar el desarrollo del \gls{genotype} que tenga dicho valor más alto. Estas intervenciones las definimos del siguiente modo:
+
+\begin{R}
+	interventions <- list(
+	list(ID           = "i1",
+	Trigger       = "genADiff > genBDiff and genADiff > genWTDiff",
+	WhatHappens   = "n_A = n_A*0.5",
+	Periodicity   = 10,
+	Repetitions   = Inf
+	),list(ID           = "i2",
+	Trigger       = "genBDiff > genADiff and genBDiff > genWTDiff",
+	WhatHappens   = "n_B = n_B*0.5",
+	Periodicity   = 10,
+	Repetitions   = Inf
+	)
+	)
+\end{R}
+
+Posteriormente iniciamos la simulación (el código para reproducir este ejemplo lo encontramos más adelante en este mismo apartado \ref{code}), obteniendo los resultados visibles en las figuras \ref{fig:rateDiffAt1} y \ref{fig:populationAT1}.
+
+\begin{figure}[htp]
+	\begin{minipage}{0.48\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{imagenes/rateDiffAT1}
+		\caption{Diferencia \glspl{tasaNac} y muerte. Primer ejemplo terapia adaptativa}
+		\label{fig:rateDiffAt1}
+	\end{minipage}\hfill
+	\begin{minipage}{0.48\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{imagenes/populationsAT1}
+		\caption{Evolución poblacional. Primer ejemplo terapia adaptativa}
+		\label{fig:populationAT1}
+	\end{minipage}
+\end{figure}
+
+Vemos que efectivamente las bajadas bruscas en la población que corresponden a las intervenciones se producen al comienzo en \textbf{WT} que comienza siendo el más adaptado pues tiene mayor diferencia entre las tasas, pero a partir del tiempo 30 aproximadamente, estas pasan a realizarse sobre el \gls{genotype} \textbf{B}, que justo es a partir de ese punto cuando comienza a tener una diferencia entre tasas mucho más alta.
+
+\subsection{Código para reproducir el este ejemplo de este punto}\label{code}
+\url{https://github.com/JavierLopezC/OncoSimul/blob/adaptive-ther/OncoSimulR/vignettes/OncoSimulR.Rmd} línea 13117.
+
+
+\begin{R}
+	dfat2 <- data.frame(Genotype = c("WT", "A", "B"), 
+	Fitness = c("1",
+	"1 + 0.2 * (n_B > 10)",
+	".9 + 0.4 * (n_A > 10)"
+	))
+	afat2 <- allFitnessEffects(genotFitness = dfat2, 
+	frequencyDependentFitness = TRUE)
+	
+	
+	userVars <- list(
+	list(Name           = "genADiff",
+	Value       = 0
+	),list(Name           = "genBDiff",
+	Value       = 0
+	),list(Name           = "genWTDiff",
+	Value       = 0
+	)
+	)
+	
+	userVars <- createUserVars(userVars)
+	
+	rules <- list(
+	list(ID = "rule_1",
+	Condition = "TRUE",
+	Action = "genADiff = b_1-d_1"
+	),list(ID = "rule_2",
+	Condition = "TRUE",
+	Action = "genBDiff = b_2-d_2"
+	),list(ID = "rule_3",
+	Condition = "TRUE",
+	Action = "genWTDiff = b_-d_"
+	),list(ID = "rule_4",
+	Condition = "n_A < 1000",
+	Action = "genADiff = -1"
+	),list(ID = "rule_5",
+	Condition = "n_B < 1000",
+	Action = "genBDiff = -1"
+	),list(ID = "rule_6",
+	Condition = "n_ < 1000",
+	Action = "genWTDiff = -1"
+	)
+	)
+	
+	rules <- createRules(rules, afat2)
+	
+	interventions <- list(
+	list(ID           = "i1",
+	Trigger       = "genADiff > genBDiff and genADiff > genWTDiff",
+	WhatHappens   = "n_A = n_A*0.5",
+	Periodicity   = 10,
+	Repetitions   = Inf
+	),list(ID           = "i2",
+	Trigger       = "genBDiff > genADiff and genBDiff > genWTDiff",
+	WhatHappens   = "n_B = n_B*0.5",
+	Periodicity   = 10,
+	Repetitions   = Inf
+	),list(ID           = "i3",
+	Trigger       = "genWTDiff > genADiff and genWTDiff > genBDiff",
+	WhatHappens   = "n_ = n_*0.5",
+	Periodicity   = 10,
+	Repetitions   = Inf
+	)
+	)
+	
+	interventions <- createInterventions(interventions, afat2)
+	
+	set.seed(1) ## for reproducibility
+	atex2 <- oncoSimulIndiv(afat2,
+	model = "McFLD", 
+	onlyCancer = FALSE, 
+	finalTime = 200,
+	mu = 1e-4,
+	initSize = 5000, 
+	keepPhylog = FALSE,
+	seed = NULL, 
+	errorHitMaxTries = FALSE, 
+	errorHitWallTime = FALSE,
+	userVars = userVars,
+	rules = rules,
+	interventions = interventions)
+	
+	plot(atex2, show = "genotypes", type = "line")
+	
+	plot(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(atex2$other$userVarValues) [c(TRUE, FALSE, FALSE, FALSE)], xlab="Time", ylab="RateDiff", ylim=c(-0.75,0.75), type="l", col="#A6761D")  
+	lines(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(atex2$other$userVarValues) [c(FALSE, TRUE, FALSE, FALSE)], type="l", col="#666666") 
+	lines(unlist(atex2$other$userVarValues) [c(FALSE, FALSE, FALSE, TRUE)], unlist(atex2$other$userVarValues) [c(FALSE, FALSE, TRUE, FALSE)], type="l", col="#1B9E77") 
+	legend(0,0.75,legend=c("genADiff", "genBDiff", "genWTDiff"), col=c("#A6761D", "#666666", "#1B9E77"), lty= 1:2) 
 \end{R}
 
 \chapter{Documentación de las principales funciones de R \label{sec:docum}}\label{B}
