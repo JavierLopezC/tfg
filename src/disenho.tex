@@ -31,7 +31,7 @@ Por otro lado tendremos un listado con las reglas que permiten modificar y actua
 	\item \textbf{Action}: acción que se llevará a cabo en caso de que la \textbf{Condition} se cumpla, es decir, es el conjunto de modificaciones a realizar a las variables de usuario previamente definidas, en caso de que se cumpla la condición de la regla. podrá contener una o varias fórmulas que determinarán los nuevos valores de una o varias variables de entre las especificadas previamente por el usuario.
 \end{itemize}
 
-En este punto debemos mencionar también qué variables del programa se ha decidido que sean empleables para la modificación de variables y definición de las reglas por parte del usuario y los motivos por los que se ha decidido esto. Las variables disponibles para la definición de las reglas son:
+En este punto debemos mencionar también qué variables del programa se ha decidido que sean utilizables para la modificación de variables y definición de las reglas por parte del usuario y los motivos por los que se ha decidido esto. Las variables internas disponibles para la definición de las reglas son:
 
 \begin{itemize}
 	\item \textbf{N}: número total de células de toda la población (la suma del número de células de todos los \glspl{genotype}).
@@ -42,9 +42,9 @@ En este punto debemos mencionar también qué variables del programa se ha decid
 
 Estas variables se han añadido con la finalidad de dar a las variables de usuario la mayor flexibilidad posible para que el usuario las defina de acuerdo a sus necesidades, considerando todas las variables interesantes tanto para la terapia adaptativa como desde un punto de vista biológico para estudiar su evolución.
 
-Las variables \textbf{N}, \textbf{n\_x} y \textbf{T} se consideran necesarias para la terapia adaptativa, ya que permiten definir variables de usuario que se modifiquen de auerdo a la evolución del tamaño del \gls{tumor} (\textbf{N}), a la cantidad de las células de un determinado tipo, que se consideren más perjudiciales o sensibles a un determinado tratamiento (\textbf{n\_x}) o al tiempo transcurrido (\textbf{T}). Estas variables definidas de acuerdo a estos atributos se podrían emplear luego para definir las intervenciones que se pueden simular con el programa OncoSimulR\cite{OncoSimulR}, permitiendo adaptarlas de forma adecuada a las distintas combinaciones posibles de estos tres atributos a lo largo de la simulación, generando así la posibilidad de simular terapia adaptativa. A estas tres variables se les suman las propias variables de usuario, para poder así generar combinaciones aún más complejas que permitan simular escenarios muy complejos (como se ilustrará en la sección \ref{5.3}).
+Las variables \textbf{N}, \textbf{n\_x} y \textbf{T} se consideran necesarias para la terapia adaptativa, ya que permiten definir variables de usuario que se modifiquen de acuerdo a la evolución del tamaño del \gls{tumor} (\textbf{N}), a la cantidad de las células de un determinado tipo, que se consideren más perjudiciales o sensibles a un determinado tratamiento (\textbf{n\_x}) o al tiempo transcurrido (\textbf{T}). Las variables definidas de acuerdo a estos atributos se podrían emplear luego para definir las intervenciones que se pueden simular con el programa OncoSimulR\cite{OncoSimulR}, permitiendo adaptarlas de forma adecuada a las distintas combinaciones posibles de estos tres atributos a lo largo de la simulación, generando así la posibilidad de simular terapia adaptativa. A estas tres variables se les suman las propias variables de usuario, para poder así generar combinaciones aún más complejas que permitan simular escenarios muy complejos (como se ilustrará en la sección \ref{5.3}).
 
-Se permite también el uso de otras variables que incluyen  \textbf{birthRate}, \textbf{deathRate} y \textbf{mutationRate} que corresponden a las tasas de nacimiento, muerte y mutación de cada \gls{genotype}, determinando con qué asiduidad ocurren estos eventos. Estas se han añadido con una finalidad más informativa, ya que, a pesar de no ser tan interesantes desde el punto de vista de la terapia adaptativa, dan una información importante acerca de la adaptabilidad de los distintos \glspl{genotype} a lo largo de la simulación, haciendo que el estudio de la evolución de variables de usuario que sean combinación de estas variables a lo largo de la simulación pueda tener un gran interés para el estudio tumoral.
+Se permite también el uso de otras variables que incluyen  \textbf{birthRate}, \textbf{deathRate} y \textbf{mutationRate} que corresponden a las tasas de nacimiento, muerte y mutación de cada \gls{genotype}, determinando con qué asiduidad ocurren estos eventos. Estas se han añadido con una finalidad más informativa, ya que, a pesar de no ser tan interesantes desde el punto de vista de la terapia adaptativa, dan una información importante acerca de la adaptabilidad de los distintos \glspl{genotype} a lo largo de la simulación. De este modo conseguimos que la visualización de la evolución de variables de usuario que sean combinación de estas variables internas a lo largo de la simulación pueda tener un gran interés para el estudio tumoral.
 
 \section{Algoritmo de actualización}\label{3.4}
 
@@ -53,9 +53,9 @@ El algoritmo de actualización de las variables de usuario es a priori, bastante
 De forma general el algoritmo de actualización es:
 
 \begin{enumerate}
-	\item[1.] El usuario define las varibales de usuario que desea y las reglas para modificarlas
+	\item[1.] El usuario define las varibales que desea y las reglas para modificarlas
 	\item[2.] Se verifica que reglas y variables están definidas correctamente
-	\item[3.] Cada unidad de tiempo muestreada en la simulación:
+	\item[3.] Para cada unidad de tiempo muestreada en la simulación:
 	\begin{enumerate}
 		\item[3.1.] Para cada regla:
 		\begin{enumerate}
@@ -77,7 +77,7 @@ Para obtener los datos de evolución de las variables de usuario definidas en el
 	\item Una matriz con los valores de las variables de usuario en cada unidad de tiempo muestreada (en el mismo orden que los nombres de las variables en la lista de nombres de las variables de usuario).	
 \end{itemize}
 
-La finalidad de añadir estos datos a la salida de la simulación es poder emplear las variables de usuario (que son arbitrariamente complejas) como datos de salida y no solo como valores a emplear en otros procesos como las intervenciones. Por ejemplo, obtener estos datos permite al usuario graficar la evolución en el tiempo de algunas variables de usuario creadas, lo que puede ser de gran interés para evaluar la evolución del \gls{tumor} en la simulación. Además, la adición de estos datos en la salida facilitará enormemente las labores de testeo de la funcionalidad implementada.	Ejemplos de ambos casos se mostrarán en las secciones \ref{5.3.1} y \ref{5.3.2}´.
+La finalidad de añadir estos datos a la salida de la simulación es poder emplear las variables de usuario (que son arbitrariamente complejas) como datos de salida y no solo como valores a emplear en otros procesos como las intervenciones. Por ejemplo, obtener estos datos permite al usuario graficar la evolución en el tiempo de algunas variables de usuario creadas, lo que puede ser de gran interés para evaluar la evolución del \gls{tumor} en la simulación. Además, la adición de estos datos en la salida facilitará enormemente las labores de testeo de la funcionalidad implementada.	Ejemplos de ambos casos se mostrarán en las secciones \ref{5.3.1} y \ref{5.3.2}.
 
 
 

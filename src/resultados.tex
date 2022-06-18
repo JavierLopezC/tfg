@@ -12,7 +12,7 @@ Antes de proceder a introducir toda la nueva funcionalidad explicada a partir de
 		\item Modificamos los tests ya existentes de intervenciones para adaptarlos a estos nuevos cambios y comprobamos que todos los tests se pasan correctamente. Estas modificaciones consisten principalmente en hacer que se empleen los tiempos almacenados en \textbf{x\$other\$interventionTimes} para buscar los puntos en los que se realizan intervenciones y comprobar que estas son correctas, en lugar de buscarlas recorriendo la estructura de salida con las poblaciones en cada unidad de tiempo, pues este método no permitía un testeo correcto además de ser mucho menos eficiente.
 \end{itemize}
 
-Por último, tras implementar toda la nueva funcionalidad (explicada a partir del punto \ref{4.4}) volvemos a ejecutar toda la batería de tests  para asegurar, de nuevo, que estos cambios no han afectado al correcto funcionamiento de la funcionalidad previa. Nótese que cada vez que se ejcuta el comando ``R CMD check'' se ejcutan todos los tests de la herramienta \textbf{Testthat}\cite{Testthat}, siendo la forma habitual de operar ejecutar en orden:
+Por último, tras implementar toda la nueva funcionalidad (explicada a partir del punto \ref{4.4}) volvemos a ejecutar toda la batería de tests  para asegurar, de nuevo, que estos cambios no han afectado al correcto funcionamiento de la funcionalidad previa. Nótese que cada vez que se ejecuta el comando ``R CMD check'' se ejecutan todos los tests de la herramienta \textbf{Testthat}\cite{Testthat}, siendo la forma habitual de operar ejecutar en orden:
 \begin{enumerate}
 	\item R CMD build
 	\item R CMD check
@@ -50,7 +50,7 @@ Una vez hemos comprobado que las variables de usuario funcionan de forma adecuad
 En esta sección vamos a comprobar que, efectivamente, los resultados obtenidos cumplen con lo esperado e, incluso, se han logrado resultados positivos que no se habían planteado inicialmente como objetivos del trabajo.
 
 \subsection{Variables de usuario como datos de interés a la salida}\label{5.3.1}
-Al implementar las variables de usuario, como hemos comentado anteriormente, se permite obtener un enorme número de datos arbitrariamente complejos de la simulación a la salida. Estos pueden ser de gran interés para una mejor comprensión de lo ocurrido durante la simulación. En esta sección se van a plantear algunos ejemplo de ejecución en los que se saca partido a esta funcionalidad.
+Al implementar las variables de usuario, como hemos comentado anteriormente, se permite obtener un enorme número de datos arbitrariamente complejos de la simulación a la salida. Estos pueden ser de gran interés para una mejor comprensión de lo ocurrido durante la simulación. En esta sección se van a plantear algunos ejemplos de ejecución en los que se saca partido a esta funcionalidad.
 
 \subsubsection{Representación de la proporción de cada \gls{genotype} sobre la población total}\label{5.3.1.1}
 Comenzamos con un ejemplo muy sencillo en el que generamos un grupo de variables de usuario que almacenan la proporción de cada \gls{genotype} existente sobre el total de la población, es decir, matemáticamente cada una de estas variables es, para cada \gls{genotype} ``X'':
@@ -155,8 +155,8 @@ Comenzamos entonces la simulación de ambos casos. Los resultados obtenidos son 
 Podemos observar como, en el caso en que no aplicamos la terapia adaptativa (figura \ref{fig:hansen2000sin}) eliminamos rápidamente la población de \gls{genotype} B, y la ausencia de competencia hace que la población del \gls{genotype} resistente A se dispare fuera de control. Esto es justo lo que ocurre en el caso \textbf{b} de la figura \ref{fig:adapt}.
 Por el contrario, en el caso con terapia adaptativa (figura \ref{fig:hansen2000con}), se logra mantener a raya y en un tamaño estable la población de células cancerígenas durante mucho más tiempo. Esto se debe a que, al ir parando la terapia de forma controlada, se mantiene un cierto grado de competencia celular entre los genotipos, haciendo que la población resistente (que no tenemos forma de reducir mediante tratamientos) no se dispare fuera de control gracias a la presencia de una cierta cantidad de células del \gls{genotype} no resistente B. Finalmente la población resistente sí acaba expandiéndose más allá de lo controlable, ya que no estamos en un caso ideal, pero la terapia adaptativa logra su función, que es mantener a raya el crecimiento del tumor durante el mayor tiempo posible. Esto es justo lo que se muestra en el caso \textbf{c} de la figura \ref{fig:adapt}, que representa un caso canónico de terapia adaptativa y que hemos logrado reproducir, consiguiendo el principal objetivo de este trabajo.
 
-\subsubsection{Simulación de situación verosímil compleja con terapia "SMART"}\label{5.3.2.2}
-Por último vamos a simular un escenario complejo de terapia adaptativa intentando acercarnos lo máximo posible a lo que podría ocurrir en un caso real. Para ello establecemos en qué consistiría esta terapia adaptativa aplicable en la realidad, siguiendo una metodología \textbf{"SMART"} (Sequential, Multiple Assignment, Randomized Trial), dónde cada cierto tiempo se evalúa el tratamiento a dar a un paciente en función de cómo está respondiendo a estos. De este modo planteamos el siguiente tratamiento:
+\subsubsection{Simulación de situación verosímil compleja}\label{5.3.2.2}
+Por último vamos a simular un escenario complejo de terapia adaptativa intentando acercarnos lo máximo posible a lo que podría ocurrir en un caso real. Para ello establecemos en qué consistiría esta terapia adaptativa aplicable en la realidad,planteando el siguiente tratamiento:
 
 \begin{table}[h]
 	\footnotesize
@@ -165,13 +165,13 @@ Por último vamos a simular un escenario complejo de terapia adaptativa intentan
 		\textbf{1.} & Cada cierto tiempo el paciente tiene una revisión dónde se analiza el progreso de su \gls{tumor} \\ \hline
 		\textbf{2.} & Si se detectan unos valores anormales en las poblaciones de \glspl{genotype} mutados se comienza un tratamiento base para tratar de frenar el avance de este \\ \hline
 		\textbf{3.} & Si se observa un crecimiento anormalmente grande de un tipo determinado de células se cambia el tratamiento que se estaba aplicando hasta el momento por otro más enfocado a las células de ese tipo \\ \hline
-		\textbf{4.} & Si el tumo sobrepasa un cierto tamaño preestablecido se plantea la necesidad de realizar una intervención quirúrgica para tratar de eliminarlo \\ \hline
+		\textbf{4.} & Si el tumor sobrepasa un cierto tamaño preestablecido se plantea la necesidad de realizar una intervención quirúrgica para tratar de eliminarlo \\ \hline
 	\end{tabular}
 	\caption{Tratamiento del segundo ejemplo de terapia adaptativa.}
 	\label{tab:ejemplocomplejotreat}
 \end{table}
 
-Para este ejemplo además consideraremos preocupantes las células de \glspl{genotype} distintos al \textbf{WT}, pues este es el inicial sin \glspl{mut}, y, por tanto, no se considera peligroso.
+Además consideraremos preocupantes solo las células de \glspl{genotype} distintos al \textbf{WT}, pues este es el inicial sin \glspl{mut}, y, por tanto, no se considera peligroso.
 
 Todo el código para reproducir este ejemplo se encuentra en el apéndice \ref{A.4}.
 
@@ -199,7 +199,7 @@ Estas las modificaremos de acuerdo a las siguientes reglas:
 	\footnotesize
 	\begin{tabular}{|p{0.3cm}|p{15.2cm}|}
 		\hline
-		\textbf{1.} & Si ``current time (T)'' - \textbf{lastTime}  < 10 (no han pasado 10 segundos):  \textbf{measure} = 0 (no hay que medir) \\ \hline
+		\textbf{1.} & Si ``current time (T)'' - \textbf{lastTime}  < 10 (no han pasado 10 unidades de tiempo):  \textbf{measure} = 0 (no hay que medir) \\ \hline
 		\textbf{2.} & Si T - \textbf{lastTime}  > 10 (han pasado 10 segundos):  \textbf{measure} = 1 (hay que medir) y \textbf{lastTime} = T \\ \hline
 		\textbf{3.} & Si \textbf{measure} == 1 (hay que medir): \textbf{previousA} = \textbf{lastMeasuredA}; \textbf{previousB}=\textbf{lastMeasuredB}; \textbf{lastMeasuredA} = n\_A y \textbf{lastMeasuredB} = n\_B (almacenamos los datos medidos). \\ \hline
 		\textbf{4.} & Si no se cumple ninguna de las condiciones siguientes (Si true): \textbf{treatment} = 0. \\ \hline
@@ -251,4 +251,4 @@ Con todo esto comenzamos la simulación, obteniendo el resultado poblacional de 
 
 Podemos ver como a partir de aproximadamente el tiempo 100 comienza a haber pequeñas bajadas bruscas en todos los \glspl{genotype} al mismo tiempo, correspondientes al tratamiento base. Luego alrededor del tiempo 150 el \gls{genotype} \textbf{B} aumenta demasiado y sufre una bajada más grande por su tratamiento específico; y, finalmente, alrededor del tiempo 160-170 las poblaciones \textbf{A} y \textbf{B} han crecido lo suficiente como para que se lleve a cabo una intervención, por lo que se desploman todas las poblaciones.
 
-Este es por tanto un clarísimo ejemplo de una terapia adaptada al progreso del \gls{tumor}, y por tanto vemos que se ha logrado con éxito la simulación de la terapia adaptativa.
+El tratamiento planteado en este ejemplo sigue una metodología que sería aplicable en ensayos clínicios de tipo \textbf{"SMART"} (Sequential, Multiple Assignment, Randomized Trial), dónde cada cierto tiempo se evalúa el tratamiento a dar a un paciente en función de cómo está respondiendo a estos. Por tanto, con este ejemplo, se muestra` también que esta nueva funcionalidad permitiría simular la respuesta a este tipo de ensayos clínicos.

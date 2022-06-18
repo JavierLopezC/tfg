@@ -18,11 +18,11 @@ Como hemos comentado en el apartado anterior \ref{1.1}, el principal objetivo de
 
 \begin{itemize}
 	\item Familiarizarse con la herramienta OncoSimulR en el estado en que se encuentra previamente al inicio del trabajo (especialmente el flujo general de código de la simulación y el funcionamiento de las intervenciones, que son los aspectos más relacionados con la funcionalidad que se quiere implementar).
-	\item Aprender sobre R y C++, ya que son dos lenguajes con los que no estoy totalmente familiarizado al inicio de este trabajo.
+	\item Aprender sobre R y C++, ya que son dos lenguajes con los que se está totalmente familiarizado al inicio de este trabajo.
 	\item Completar la unificación de las ramas anteriores solucionando todos los errores que aparezcan durante el proceso.
 	\item Añadir la posibilidad de definir variables de usuario arbitrariamente complejas (que sean función de los parámetros de la simulación tales como población total, subpoblaciones de los \glspl{genotype}, \gls{fitness}, etc) tanto como salida en sí mismas, como para emplearse en las intervenciones. Este será el mecanismo principal que permitirá la implementación de la terapia adaptativa, como veremos en el apartado \ref{3}.
 	\item Insertar la funcionalidad de las variables de usuario en el flujo general de código de la simulación.
-	\item Permitir que las intervenciones empleen estas nuevas variables de usuario. Esto es lo que haría posible simular la terapia adaptativa.
+	\item Permitir que las intervenciones empleen estas nuevas variables de usuario. Esto es lo que hará posible simular la terapia adaptativa.
 	\item Generar una batería de pruebas extensa para comprobar el correcto funcionamiento de las variables de usuario y las intervenciones que las emplean.
 \end{itemize}
 
@@ -30,8 +30,8 @@ Como hemos comentado en el apartado anterior \ref{1.1}, el principal objetivo de
 
 A lo largo de este documento se explicará en detalle todo el trabajo llevado a cabo para lograr los objetivos definidos en el punto anterior. Debido a la extensión de este, se dividirá la memoria en diversos apartados:
 \begin{itemize}
-	\item En primer lugar, en \ref{2} analizaremos el estado del arte, centrándonos en el punto en que se encuentra previamente a este trabajo la herramienta \textbf{OncoSimulR}\cite{OncoSimulR}, su funcionalidad disponible y el funcionamiento del algoritmo de simulación que implementa, así como el análisis detallado de las dos ramas con funcionalidad recientemente implementada que deberán unificarse.
-	\item A continuación, en el apartado de diseño \ref{3}, veremos la estrategia definida para alcanzar la funcionalidad deseada en el programa, y como se ha planificado cada paso que se ha de llevar a cabo para lograrlo.
+	\item En primer lugar, en \ref{2} analizaremos el estado del arte, centrándonos en el punto en que se encontraba previamente a este trabajo la herramienta \textbf{OncoSimulR}\cite{OncoSimulR}, su funcionalidad disponible y el funcionamiento del algoritmo de simulación que implementa, así como el análisis detallado de las dos ramas con funcionalidad recientemente implementada que se han unificado.
+	\item A continuación, en el apartado de diseño \ref{3}, veremos la estrategia definida para alcanzar la funcionalidad deseada en el programa, y como se ha planificado cada paso que se ha llevado a cabo para lograrlo.
 	\item Posteriormente, en el apartado de implementación \ref{4}, abordaremos el proceso de modificación del código del programa llevado a cabo para implementar los cambios definidos en el apartado de diseño. Este apartado incluye en detalle el proceso de unificación de ramas divergentes \ref{4.2} que se debió realizar previamente a la implementación de la nueva funcionalidad, que fue un proceso bastante más complejo de lo esperado inicialmente.
 	\item Seguidamente, en el apartado de pruebas y resultados \ref{5}, explicaremos los tests llevados a cabo para asegurar el correcto funcionamiento de lo implementado, e ilustraremos la nueva funcionalidad con una serie de ejemplos de ejecución con sus correspondientes resultados.
 	\item Por último, en el apartado \ref{6} extraeremos unas breves conclusiones acerca del proyecto, y analizaremos las posibles líneas de trabajo futuro para extender aún más esta funcionalidad.
